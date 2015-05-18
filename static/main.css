@@ -1,0 +1,56 @@
+/**
+ * Wrapper
+ */
+.wrapper {
+  max-width: -webkit-calc(800px - (30px * 2));
+  max-width: calc(800px - (30px * 2));
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 30px;
+  padding-left: 30px; }
+  @media screen and (max-width: 800px) {
+    .wrapper {
+      max-width: -webkit-calc(800px - (30px));
+      max-width: calc(800px - (30px));
+      padding-right: 15px;
+      padding-left: 15px; } }
+
+/**
+ * Clearfix
+ */
+.wrapper:after {
+  content: "";
+  display: table;
+  clear: both; }
+
+body {
+  font-family: Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 300;
+  color: #111;
+  background-color: #fdfdfd;
+  -webkit-text-size-adjust: 100%; }
+
+#recent-tweets {
+  height: 300px;
+  color: #ccc; }
+
+.poem-container {
+  font-family: "Times New Roman", Times, Georgia, serif; }
+  .poem-container a {
+    text-decoration: none;
+    color: #000;
+    font-size: 24px; }
+
+#left {
+  display: block;
+  width: 50%;
+  float: left; }
+
+#right {
+  display: block;
+  width: 50%;
+  float: right; }
+
+/*# sourceMappingURL=main.css.map */

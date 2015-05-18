@@ -1,0 +1,39 @@
+body {
+    font-family: $base-font-family;
+    font-size: $base-font-size;
+    line-height: $base-line-height;
+    font-weight: 300;
+    color: $text-color;
+    background-color: $background-color;
+    -webkit-text-size-adjust: 100%;
+}
+
+#recent-tweets {
+	height: 300px;
+	color: #ccc;
+}
+
+.poem-container {
+	font-family: $poem-font-family;
+	
+	a {
+		text-decoration: none;
+		color: #000;
+		font-size: $base-font-size * 1.5;
+	}
+
+}
+#left {
+	// background-color: #ccc;
+	display: block;
+	width: 50%;
+	float: left;
+}
+
+#right {
+	display: block;
+	// background-color: #FF0;
+	width: 50%;
+	float: right;
+}
+
