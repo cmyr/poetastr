@@ -16,12 +16,8 @@ import zmqstream
 app = Flask(__name__)
 
 def encode_message(message_type, body):
-    # if re.search(r'\n\n', text):
-    #     print('bad message: %s' % text)
-    # text = re.sub(r'\n+', r'\n', text)
     jsonable = {'mtype': message_type, 'body': body}
     return 'data: %s\n\n' % json.dumps(jsonable)
-    # return 'data: {"mtype": "%s", "text": "%s"}\n\n' % (message_type, text)
 
 def tweet_filter(source_iter):
     for item in source_iter:
@@ -38,6 +34,10 @@ def stripped_tweet(tweet):
     return twittertools.prune_dict(tweet, dict_template)
 
 def iter_wrapper(source_iter, key=None):
+    """ 
+    wraps an iterator and displays a graphic activity indicator
+    so you don't have to look at a blank console and hope things are running.
+    """
     activity_indicator = zmqstream.ActivityIndicator()
     count = 0
     for i in source_iter:
@@ -46,14 +46,13 @@ def iter_wrapper(source_iter, key=None):
             last_word = i.split()[-1]
         else:
             last_word = i.get(key).split()[-1]
-        # activity_indicator.message = last_word + " %d" % count
-        # activity_indicator.tick()
         yield i
 
 def poem_source(host="127.0.0.1", port="8069", debug=False):
-    poet = poetry.Haikuer()
-    tweet_texts = tweet_filter(zmqstream.zmq_iter(host=host, port=port))
-    # tweet_texts = open(os.path.expanduser('~/tweetdbm/may04.txt')).readlines()
+    # poet = poetry.Concrete()
+    poets = [poetry.sorting.Limericker(), poetry.sorting.Haikuer()]
+    poet = poetry.sorting.MultiPoet(poets=poets)
+    stream = tweet_filter(zmqstream.zmq_iter(host=host, port=port))
 
     line_filters = [
     poetry.filters.numeral_filter,
@@ -62,24 +61,21 @@ def poem_source(host="127.0.0.1", port="8069", debug=False):
     poetry.filters.real_word_ratio_filter(0.9)
     ]
 
-    source = poetry.line_iter(tweet_texts, line_filters, key='text')
-    for item in poet.generate_from_source(iter_wrapper(source, key='text'), key='text', yield_lines=True):
-        # print(poet.prettify(poem))
-        if isinstance(item, basestring):
-            yield encode_message('line', item)
-        elif isinstance(item, tuple):
-            yield encode_message('poem', poet.dictify(item))
+    for line in poetry.line_iter(stream, line_filters, key='text'):
+        poem = poet.add_keyed_line(line, key='text')
+        has_poem = poem != None
+        # yield encode_message('line', {'line': line, 'has_poem': has_poem})
+        yield encode_message('line', line.get('text'))
+
+        if poem:
+            print(type(poem))
+        if isinstance(poem, list):
+            for p in poem:
+                yield encode_message('poem', p.to_dict())
+        elif isinstance(poem, poetry.sorting.Poem):
+            yield encode_message('poem', poem.to_dict())
 
 
-# def event_stream():
-#     count = 0
-#     while True:
-#         gevent.sleep(2)
-#         payload_str = 'count: %s' % count
-#         yield encode_message('count', payload_str)
-#         if count % 3 == 0:
-#             yield encode_message('item', 'three #%d' % int(count/3))
-#         count += 1
 
 @app.route('/my_event_source')
 def sse_request():
@@ -96,105 +92,3 @@ if __name__ == '__main__':
     #     print(line)
     http_server = WSGIServer(('127.0.0.1', 8001), app)
     http_server.serve_forever()
-
-
-# # author: oskar.blom@gmail.com
-# #
-# # Make sure your gevent version is >= 1.0
-# import gevent
-# from gevent.wsgi import WSGIServer
-# from gevent.queue import Queue
-
-# from flask import Flask, Response
-
-# import time
-
-
-# # SSE "protocol" is described here: http://mzl.la/UPFyxY
-# class ServerSentEvent(object):
-
-#     def __init__(self, data):
-#         self.data = data
-#         self.event = None
-#         self.id = None
-#         self.desc_map = {
-#             self.data : "data",
-#             self.event : "event",
-#             self.id : "id"
-#         }
-
-#     def encode(self):
-#         if not self.data:
-#             return ""
-#         lines = ["%s: %s" % (v, k) 
-#                  for k, v in self.desc_map.iteritems() if k]
-        
-#         return "%s\n\n" % "\n".join(lines)
-
-# app = Flask(__name__)
-# subscriptions = []
-
-# # Client code consumes like this.
-# @app.route("/")
-# def index():
-#     debug_template = """
-#      <html>
-#        <head>
-#        </head>
-#        <body>
-#          <h1>Server sent events</h1>
-#          <div id="event"></div>
-#          <script type="text/javascript">
-
-#          var eventOutputContainer = document.getElementById("event");
-#          var evtSrc = new EventSource("/subscribe");
-
-#          evtSrc.onmessage = function(e) {
-#              console.log(e.data);
-#              eventOutputContainer.innerHTML = e.data;
-#          };
-
-#          </script>
-#        </body>
-#      </html>
-#     """
-#     return(debug_template)
-
-# @app.route("/debug")
-# def debug():
-#     return "Currently %d subscriptions" % len(subscriptions)
-
-# @app.route("/publish")
-# def publish():
-#     #Dummy data - pick up from request for real data
-#     def notify():
-#         msg = str(time.time())
-#         for sub in subscriptions[:]:
-#             sub.put(msg)
-    
-#     gevent.spawn(notify)
-    
-#     return "OK"
-
-# @app.route("/subscribe")
-# def subscribe():
-#     def gen():
-#         q = Queue()
-#         subscriptions.append(q)
-#         try:
-#             while True:
-#                 result = q.get()
-#                 ev = ServerSentEvent(str(result))
-#                 yield ev.encode()
-#         except GeneratorExit: # Or maybe use flask signals
-#             subscriptions.remove(q)
-
-#     return Response(gen(), mimetype="text/event-stream")
-
-# if __name__ == "__main__":
-#     app.debug = True
-#     server = WSGIServer(("", 5000), app)
-#     server.serve_forever()
-#     # Then visit http://localhost:5000 to subscribe 
-
-#     # and send messages by visiting http://localhost:5000/publish
