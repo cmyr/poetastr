@@ -9,31 +9,43 @@ body {
 }
 
 #recent-tweets {
-	height: 300px;
-	color: #ccc;
+	// height: 300px;
+	position: absolute;
+	z-index: -1;
+	font-size: $base-font-size * 4;
+	font-weight: 400;
+	line-height: 1;
+
+	color: #eee;
 }
 
 .poem-container {
 	font-family: $poem-font-family;
-	
+	// font-family: Courier, mono;
 	a {
 		text-decoration: none;
 		color: #000;
 		font-size: $base-font-size * 1.5;
 	}
-
 }
+
+.limerick {
+	position: relative;
+	margin-top: 60px;
+	margin-left: -20px;
+}
+
 #left {
 	// background-color: #ccc;
 	display: block;
-	width: 50%;
+	width: 80%;
 	float: left;
 }
 
 #right {
 	display: block;
 	// background-color: #FF0;
-	width: 50%;
+	width: 20%;
 	float: right;
 }
 

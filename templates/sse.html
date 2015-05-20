@@ -52,12 +52,27 @@
                             }
                             if (msg.mtype == "poem") {
                                 console.log(message.data)
-                                // var line_array = msg.text.split('\n');
-                                $('.poem-container').html ( msg.body.map(function(line) {
-                                    return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
-                                }).reduce(function(a, b) {
-                                    return a + b
-                                }));
+                                switch (msg.body.poem_type) {
+                                    case "haiku":
+                                        $('.haiku').html ( msg.body.lines.map(function(line) {
+                                        return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
+                                        }).reduce(function(a, b) {
+                                            return a + b
+                                        }));
+                                        break;
+                                    case "limerick":
+                                        $('.limerick').html ( msg.body.lines.map(function(line) {
+                                        return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
+                                        }).reduce(function(a, b) {
+                                            return a + b
+                                        }));
+                                        break;
+                                }
+                                // $('.poem-container').html ( msg.body.lines.map(function(line) {
+                                //     return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
+                                // }).reduce(function(a, b) {
+                                //     return a + b
+                                // }));
 
                                 $( "a" ).click(function( event ) {
                                     event.preventDefault();
@@ -96,18 +111,18 @@
     <body>
 
         <h2>Demo</h2>
-        <div class="wrapper">
         <div id="recent-tweets">
-            
         </div>
+        <div class="wrapper">
         </div>
         <div class="wrapper">
             <div id="left">
-                <div class="poem-container">
+                <div class="poem-container haiku">
+                </div>
+                <div class="poem-container limerick">
                 </div>
             </div>
             <div id="right">
-            what
             </div>
         </div>
         <!-- <ul id="output">
