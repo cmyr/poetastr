@@ -11,11 +11,132 @@ import json
 import functools
 import re
 import os
+import multiprocessing
+import Queue
+import time
+from collections import deque
 from twitter.api import Twitter, TwitterError, TwitterHTTPError
 from twitter.stream import TwitterStream, Timeout, HeartbeatTimeout, Hangup
 from twitter.oauth import OAuth
 
 from twittercreds import (CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
+
+
+class StreamHandler(object):
+
+    """
+    handles twitter stream connections. Buffers incoming tweets and
+    acts as an iter.
+    """
+
+    def __init__(self,
+                 buffersize=100,
+                 timeout=90,
+                 languages=['en'],
+                 auth=None
+                 ):
+        self.buffersize = buffersize
+        self.timeout = timeout
+        self.languages = languages
+        self.stream_process = None
+        self.auth = auth
+        self.queue = multiprocessing.Queue()
+        self._buffer = deque()
+        self._should_return = False
+        self._iter = self.__iter__()
+        self._start_time = time.time()
+        self._last_message_check = self._start_time
+
+
+    def __iter__(self):
+        """
+        the connection to twitter is handled in another process
+        new tweets are added to self.queue as they arrive.
+        on each call to iter we move any tweets in the queue to a fifo buffer
+        this makes keeping track of the buffer size a lot cleaner.
+        """
+        while 1:
+            if self._should_return:
+                print('breaking iteration')
+                raise StopIteration
+            while 1:
+                # add all new items from the queue to the buffer
+                try:
+                    self._buffer.append(self.queue.get_nowait())
+                except Queue.Empty:
+                    break
+            try:
+                if len(self._buffer):
+                    # if there's a buffer element return it
+                    yield self._buffer.popleft()
+                else:
+                    yield None
+                    continue
+            except Queue.Empty:
+                print('queue timeout')
+        print('exiting iter loop')
+
+    def next(self):
+        return self._iter.next()
+
+    def start(self):
+        """
+        creates a new thread and starts a streaming connection.
+        If a thread already exists, it is terminated.
+        """
+        self._should_return = False
+        print('creating new server connection')
+        if self.stream_process is not None:
+            print('terminating existing server connection')
+            self.stream_process.terminate()
+            if self.stream_process.is_alive():
+                pass
+            else:
+                print('thread terminated successfully')
+
+        self.stream_process = multiprocessing.Process(
+            target=self._run,
+            args=(self.queue,
+                  self.languages,
+                  self.auth))
+        self.stream_process.daemon = True
+        self.stream_process.start()
+
+        print('created process %i' % self.stream_process.pid)
+
+    def close(self):
+        """
+        terminates existing connection and returns
+        """
+        self._should_return = True
+        if self.stream_process:
+            self.stream_process.terminate()
+        print("\nstream handler closed with buffer size %i" %
+              (self.bufferlength()))
+
+    def bufferlength(self):
+        return len(self._buffer)
+
+    def _run(self, queue, languages, auth):
+        """
+        handle connection to streaming endpoint.
+        adds incoming tweets to queue.
+        runs in own process.
+        """
+        params = {'replies': 'all'}
+        stream_iter = TwitterStream(
+            auth=auth, 
+            domain='userstream.twitter.com').user(**params)
+        
+        for tweet in stream_iter:
+            if not isinstance(tweet, dict):
+                continue
+            if tweet.get('text'):
+                    try:
+                        queue.put(tweet, block=False)
+                    except Queue.Full:
+                        pass
+
 
 class TwitterHandler(object):
     """wraps twitter API calls and tracks related state"""
@@ -24,14 +145,14 @@ class TwitterHandler(object):
         self.auth = OAuth(ACCESS_KEY, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
         self.api = self.load_twitter()     
         self.stream = self.load_stream()
+        self.stream.start()
         self.last_mention = None
     
     def load_twitter(self):
         return Twitter(auth=self.auth, api_version='1.1')
 
     def load_stream(self):
-        return TwitterStream(auth=self.auth, 
-            domain='userstream.twitter.com').user(replies='all', with='user')
+        return StreamHandler(auth=self.auth)
 
 
     def fetch_posts(self, user_name, count=200):
@@ -63,7 +184,10 @@ class TwitterHandler(object):
 
 
 def main():
-    pass
+    t = TwitterHandler()
+    for i in t.stream:
+        print(i)
+
     # return fetch_posts('cmyr')
     # import argparse
     # parser = argparse.ArgumentParser()
