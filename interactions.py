@@ -12,24 +12,27 @@ import functools
 import re
 import os
 from twitter.api import Twitter, TwitterError, TwitterHTTPError
+from twitter.stream import TwitterStream, Timeout, HeartbeatTimeout, Hangup
 from twitter.oauth import OAuth
 
-import zmqstream
 from twittercreds import (CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
 
 class TwitterHandler(object):
     """wraps twitter API calls and tracks related state"""
     def __init__(self):
         super(TwitterHandler, self).__init__()
+        self.auth = OAuth(ACCESS_KEY, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
         self.api = self.load_twitter()     
+        self.stream = self.load_stream()
         self.last_mention = None
-        # self.stream = self.load_stream()
     
     def load_twitter(self):
-        return Twitter(
-        auth=OAuth(ACCESS_KEY, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET),
-        api_version='1.1'
-        )
+        return Twitter(auth=self.auth, api_version='1.1')
+
+    def load_stream(self):
+        return TwitterStream(auth=self.auth, 
+            domain='userstream.twitter.com').user(replies='all', with='user')
+
 
     def fetch_posts(self, user_name, count=200):
         max_items = 200
