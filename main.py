@@ -80,7 +80,8 @@ def poem_source(host="127.0.0.1", port="8069", debug=False):
 @app.route('/my_event_source')
 def sse_request():
     return Response(
-            poem_source('192.168.1.103'),
+            # poem_source('192.168.1.103'),
+            poem_source(),
             mimetype='text/event-stream')
 
 @app.route('/')
@@ -89,6 +90,8 @@ def page():
 
 if __name__ == '__main__':
     # for line in poem_source('192.168.1.103'):
+    # for line in poem_source():
     #     print(line)
+    print('hi')
     http_server = WSGIServer(('127.0.0.1', 8001), app)
     http_server.serve_forever()
