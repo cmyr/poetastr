@@ -15,11 +15,14 @@ import multiprocessing
 import Queue
 import time
 from collections import deque
+import twittertools
+
 from twitter.api import Twitter, TwitterError, TwitterHTTPError
 from twitter.stream import TwitterStream, Timeout, HeartbeatTimeout, Hangup
 from twitter.oauth import OAuth
 
-from twittercreds import (CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
+from twittercreds import (
+    CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
 
 
 class StreamHandler(object):
@@ -46,7 +49,6 @@ class StreamHandler(object):
         self._iter = self.__iter__()
         self._start_time = time.time()
         self._last_message_check = self._start_time
-
 
     def __iter__(self):
         """
@@ -125,51 +127,56 @@ class StreamHandler(object):
         """
         params = {'replies': 'all'}
         stream_iter = TwitterStream(
-            auth=auth, 
+            auth=auth,
             domain='userstream.twitter.com').user(**params)
-        
+
         for tweet in stream_iter:
             if not isinstance(tweet, dict):
                 continue
             if tweet.get('text'):
-                    try:
-                        queue.put(tweet, block=False)
-                    except Queue.Full:
-                        pass
+                try:
+                    queue.put(tweet, block=False)
+                except Queue.Full:
+                    pass
 
 
 class TwitterHandler(object):
+
     """wraps twitter API calls and tracks related state"""
+
     def __init__(self):
         super(TwitterHandler, self).__init__()
-        self.auth = OAuth(ACCESS_KEY, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
-        self.api = self.load_twitter()     
+        self.auth = OAuth(
+            ACCESS_KEY, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
+        self.api = self.load_twitter()
         self.stream = self.load_stream()
         self.stream.start()
         self.last_mention = None
-    
+        self.screen_name = 'pypoet'
+        self.seen_users = set()
+
     def load_twitter(self):
         return Twitter(auth=self.auth, api_version='1.1')
 
     def load_stream(self):
         return StreamHandler(auth=self.auth)
 
-
     def fetch_posts(self, user_name, count=200):
         max_items = 200
         tweets = list()
 
-        params = {'screen_name': user_name, 'trim_user': 1, 'count': min(max_items, count)}
-        posts = [None, None] # we get an array of length 1 when we're out of entries
+        params = {'screen_name': user_name,
+                  'trim_user': 1, 'count': min(max_items, count)}
+        # we get an array of length 1 when we're out of entries
+        posts = [None, None]
         while len(posts) > 1:
             posts = self.api.statuses.user_timeline(**params)
             next_id = min([int(p.get('id_str')) for p in posts])
             params['max_id'] = next_id
             tweets.extend(posts)
-        for t in [p.get('text') for p in tweets]:
-            print(t)
+        return tweets
 
-    def new_mentions(self):
+    def manual_fetch_new_mentions(self):
         params = {'count': 200}
         if self.last_mention:
             params['since_id'] = self.last_mention
@@ -180,6 +187,43 @@ class TwitterHandler(object):
         users = [m for m in users if len(m)]
         print(users)
 
+    def new_user_events(self):
+        """fetch new items in the user stream"""
+        events = list()
+        while True:
+            event = self.stream.next()
+            if event not None:
+                events.append(event)
+            else:
+                break
+        return events
+
+    def prune_mention(self, tweet):
+        dict_template = {
+            "text": True,
+            'id_str': True,
+            "user": {"screen_name": True, "name": True},
+            "entities": {"user_mentions": {'screen_name': True}}}
+        pruned = twittertools.prune_dict(tweet, dict_template)
+        pruned['mentions'] = [p.get('screen_name', '') for p in
+                              pruned.get('entities').get('user_mentions')]
+        del pruned['entities']
+        return pruned
+
+    def process_user_events(self):
+        """ handle mentions etc """
+        events = new_user_events()
+        if len(events):
+            # handle mentions
+            mentions = [
+                e for e in events if e.get('entities', dict()).get('user_mentions')]
+            mentions = [prune_mention(e) for e in mentions]
+            mentions = [m for m in mentions if self.screen_name in m.get(mentions)]
+            users = set([m.get('user').get('screen_name') for m in mentions])
+            users = users.difference(self.seen_users)
+            self.seen_users.update(users)
+            userstweets = [(u, self.fetch_posts(u)) for u in users]
+            return userstweets
 
 
 
@@ -195,8 +239,6 @@ def main():
     # parser.add_argument('-c', '--count', type=int, default=20, help='number of items to save')
     # args = parser.parse_args()
     # fetch_recent_posts(**vars(args))
-
-
 
 
 if __name__ == "__main__":
