@@ -125,19 +125,19 @@ class StreamHandler(object):
         adds incoming tweets to queue.
         runs in own process.
         """
-        params = {'replies': 'all'}
+        params = {'replies': 'all', 'with': 'user'}
         stream_iter = TwitterStream(
             auth=auth,
             domain='userstream.twitter.com').user(**params)
 
         for tweet in stream_iter:
-            if not isinstance(tweet, dict):
-                continue
-            if tweet.get('text'):
-                try:
-                    queue.put(tweet, block=False)
-                except Queue.Full:
-                    pass
+            # if not isinstance(tweet, dict):
+            #     continue
+            # if tweet.get('text'):
+            try:
+                queue.put(tweet, block=False)
+            except Queue.Full:
+                pass
 
 
 class TwitterHandler(object):
@@ -176,23 +176,23 @@ class TwitterHandler(object):
             tweets.extend(posts)
         return tweets
 
-    def manual_fetch_new_mentions(self):
-        params = {'count': 200}
-        if self.last_mention:
-            params['since_id'] = self.last_mention
-        mentions = self.api.statuses.mentions_timeline(**params)
-        if len(mentions):
-            self.last_mention = max(int(m.get('id_str')) for m in mentions)
-        users = [m.get('entities').get('user_mentions') for m in mentions]
-        users = [m for m in users if len(m)]
-        print(users)
+    # def manual_fetch_new_mentions(self):
+    #     params = {'count': 200}
+    #     if self.last_mention:
+    #         params['since_id'] = self.last_mention
+    #     mentions = self.api.statuses.mentions_timeline(**params)
+    #     if len(mentions):
+    #         self.last_mention = max(int(m.get('id_str')) for m in mentions)
+    #     users = [m.get('entities').get('user_mentions') for m in mentions]
+    #     users = [m for m in users if len(m)]
+    #     print(users)
 
     def new_user_events(self):
         """fetch new items in the user stream"""
         events = list()
         while True:
             event = self.stream.next()
-            if event not None:
+            if event != None:
                 events.append(event)
             else:
                 break
@@ -212,25 +212,31 @@ class TwitterHandler(object):
 
     def process_user_events(self):
         """ handle mentions etc """
-        events = new_user_events()
-        if len(events):
-            # handle mentions
-            mentions = [
-                e for e in events if e.get('entities', dict()).get('user_mentions')]
-            mentions = [prune_mention(e) for e in mentions]
-            mentions = [m for m in mentions if self.screen_name in m.get(mentions)]
-            users = set([m.get('user').get('screen_name') for m in mentions])
-            users = users.difference(self.seen_users)
-            self.seen_users.update(users)
-            userstweets = [(u, self.fetch_posts(u)) for u in users]
-            return userstweets
+        usertweets = list()
+        for event in self.new_user_events()
+            text = event.get('text', '')
+            user = re.search(r'use @([a-z0-9_]{1,15})', text, flags=re.I)
+            if user in self.seen_users:
+                print('skipping user @%s' % user)
+                continue
+            else:
+                self.seen_users.add(user)
+                print("using @%s" % user)
+                tweets = self.fetch_posts(user)
+                usertweets.append((user, tweets))
+        return usertweets
 
 
 
 def main():
     t = TwitterHandler()
-    for i in t.stream:
-        print(i)
+    while True:
+        t.process_user_events()
+        # events = t.new_user_events()
+        # for e in events:
+        #     # print(e.get('text'))
+        time.sleep(2)
+
 
     # return fetch_posts('cmyr')
     # import argparse
