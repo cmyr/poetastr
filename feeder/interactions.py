@@ -7,14 +7,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-import json
-import functools
 import re
 import os
-import multiprocessing
-import Queue
 import time
-from collections import deque
 import twittertools
 
 from twitter.api import Twitter, TwitterError, TwitterHTTPError
@@ -23,121 +18,6 @@ from twitter.oauth import OAuth
 
 from twittercreds import (
     CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
-
-
-class StreamHandler(object):
-
-    """
-    handles twitter stream connections. Buffers incoming tweets and
-    acts as an iter.
-    """
-
-    def __init__(self,
-                 buffersize=100,
-                 timeout=90,
-                 languages=['en'],
-                 auth=None
-                 ):
-        self.buffersize = buffersize
-        self.timeout = timeout
-        self.languages = languages
-        self.stream_process = None
-        self.auth = auth
-        self.queue = multiprocessing.Queue()
-        self._buffer = deque()
-        self._should_return = False
-        self._iter = self.__iter__()
-        self._start_time = time.time()
-        self._last_message_check = self._start_time
-
-    def __iter__(self):
-        """
-        the connection to twitter is handled in another process
-        new tweets are added to self.queue as they arrive.
-        on each call to iter we move any tweets in the queue to a fifo buffer
-        this makes keeping track of the buffer size a lot cleaner.
-        """
-        while 1:
-            if self._should_return:
-                print('breaking iteration')
-                raise StopIteration
-            while 1:
-                # add all new items from the queue to the buffer
-                try:
-                    self._buffer.append(self.queue.get_nowait())
-                except Queue.Empty:
-                    break
-            try:
-                if len(self._buffer):
-                    # if there's a buffer element return it
-                    yield self._buffer.popleft()
-                else:
-                    yield None
-                    continue
-            except Queue.Empty:
-                print('queue timeout')
-        print('exiting iter loop')
-
-    def next(self):
-        return self._iter.next()
-
-    def start(self):
-        """
-        creates a new thread and starts a streaming connection.
-        If a thread already exists, it is terminated.
-        """
-        self._should_return = False
-        print('creating new server connection')
-        if self.stream_process is not None:
-            print('terminating existing server connection')
-            self.stream_process.terminate()
-            if self.stream_process.is_alive():
-                pass
-            else:
-                print('thread terminated successfully')
-
-        self.stream_process = multiprocessing.Process(
-            target=self._run,
-            args=(self.queue,
-                  self.languages,
-                  self.auth))
-        self.stream_process.daemon = True
-        self.stream_process.start()
-
-        print('created process %i' % self.stream_process.pid)
-
-    def close(self):
-        """
-        terminates existing connection and returns
-        """
-        self._should_return = True
-        if self.stream_process:
-            self.stream_process.terminate()
-        print("\nstream handler closed with buffer size %i" %
-              (self.bufferlength()))
-
-    def bufferlength(self):
-        return len(self._buffer)
-
-    def _run(self, queue, languages, auth):
-        """
-        handle connection to streaming endpoint.
-        adds incoming tweets to queue.
-        runs in own process.
-        """
-        params = {'replies': 'all', 'with': 'user'}
-        stream_iter = TwitterStream(
-            auth=auth,
-            domain='userstream.twitter.com').user(**params)
-
-        for tweet in stream_iter:
-            # if not isinstance(tweet, dict):
-            #     continue
-            # if tweet.get('text'):
-            try:
-                queue.put(tweet, block=False)
-            except Queue.Full:
-                pass
 
 
 class TwitterHandler(object):
@@ -150,7 +30,6 @@ class TwitterHandler(object):
             ACCESS_KEY, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
         self.api = self.load_twitter()
         self.stream = self.load_stream()
-        self.stream.start()
         self.last_mention = None
         self.screen_name = 'pypoet'
         self.seen_users = set()
@@ -159,7 +38,12 @@ class TwitterHandler(object):
         return Twitter(auth=self.auth, api_version='1.1')
 
     def load_stream(self):
-        return StreamHandler(auth=self.auth)
+        params = {'replies': 'all', 'with': 'user'}
+        stream_iter = TwitterStream(
+            auth=self.auth,
+            block=False,
+            domain='userstream.twitter.com').user(**params)
+        return stream_iter
 
     def fetch_posts(self, user_name, count=200):
         max_items = 200
@@ -171,21 +55,12 @@ class TwitterHandler(object):
         posts = [None, None]
         while len(posts) > 1:
             posts = self.api.statuses.user_timeline(**params)
+            print('fetching items')
+            print('rate limit remaining: %d' % posts.rate_limit_remaining)
             next_id = min([int(p.get('id_str')) for p in posts])
             params['max_id'] = next_id
             tweets.extend(posts)
         return tweets
-
-    # def manual_fetch_new_mentions(self):
-    #     params = {'count': 200}
-    #     if self.last_mention:
-    #         params['since_id'] = self.last_mention
-    #     mentions = self.api.statuses.mentions_timeline(**params)
-    #     if len(mentions):
-    #         self.last_mention = max(int(m.get('id_str')) for m in mentions)
-    #     users = [m.get('entities').get('user_mentions') for m in mentions]
-    #     users = [m for m in users if len(m)]
-    #     print(users)
 
     def new_user_events(self):
         """fetch new items in the user stream"""
@@ -193,6 +68,7 @@ class TwitterHandler(object):
         while True:
             event = self.stream.next()
             if event != None:
+                print(event)
                 events.append(event)
             else:
                 break
@@ -213,19 +89,55 @@ class TwitterHandler(object):
     def process_user_events(self):
         """ handle mentions etc """
         usertweets = list()
-        for event in self.new_user_events()
-            text = event.get('text', '')
+        for event in self.new_user_events():
+            tweet = event.get('direct_message') or event
+            text = tweet.get('text', '')
             user = re.search(r'use @([a-z0-9_]{1,15})', text, flags=re.I)
-            if user in self.seen_users:
-                print('skipping user @%s' % user)
-                continue
-            else:
-                self.seen_users.add(user)
-                print("using @%s" % user)
-                tweets = self.fetch_posts(user)
-                usertweets.append((user, tweets))
+            if user:
+                user = user.group(1)
+                if user in self.seen_users:
+                    print('skipping user @%s' % user)
+                    continue
+                else:
+                    self.seen_users.add(user)
+                    print(text)
+                    print("using @%s" % user)
+                    try:
+                        tweets = self.fetch_posts(user)
+                        usertweets.append((user, tweets))
+                    except TwitterHTTPError as err:
+                        print("error error error")
+                        # sender = tweet.get('user')
+                        msg = "an unknown error occured. :("
+                        if err.e.code == 401:
+                            msg = "unable to access @%s. Is it a private account?" % user
+                        elif err.e.code == 404:
+                            msg = "the use @%s doesn't appear to exist." % user
+                        self.reply(event, msg)
+                        continue
+
         return usertweets
 
+    def reply(self, event, message):
+        if event.get('direct_message'):
+            user = event.get('direct_message').get('sender').get('screen_name')
+            self.api.direct_messages.new(user=user, text=message)
+        else:
+            user = event.get('user', {}).get('screen_name')
+            if user:
+                self.api.statuses.update(
+                    status="@%s %s" % (user, message))
+
+    # def manual_fetch_new_mentions(self):
+    #     params = {'count': 200}
+    #     if self.last_mention:
+    #         params['since_id'] = self.last_mention
+    #     mentions = self.api.statuses.mentions_timeline(**params)
+    #     if len(mentions):
+    #         self.last_mention = max(int(m.get('id_str')) for m in mentions)
+    #     users = [m.get('entities').get('user_mentions') for m in mentions]
+    #     users = [m for m in users if len(m)]
+    #     print(users)
 
 
 def main():
@@ -235,8 +147,7 @@ def main():
         # events = t.new_user_events()
         # for e in events:
         #     # print(e.get('text'))
-        time.sleep(2)
-
+        time.sleep(1)
 
     # return fetch_posts('cmyr')
     # import argparse
