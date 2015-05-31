@@ -33,6 +33,8 @@ class TwitterHandler(object):
         self.last_mention = None
         self.screen_name = 'pypoet'
         self.seen_users = set()
+        self.rate_limit_remaining = 200
+        self.rate_limit_reset = time.time()
 
     def load_twitter(self):
         return Twitter(auth=self.auth, api_version='1.1')
@@ -53,8 +55,9 @@ class TwitterHandler(object):
                   'trim_user': 1, 'count': min(max_items, count)}
         # we get an array of length 1 when we're out of entries
         posts = [None, None]
-        while len(posts) > 1:
+        while len(posts) > 1 and self.rate_limit_remaining > 0:
             posts = self.api.statuses.user_timeline(**params)
+            self.update_rate_limit(posts)
             print('fetching items')
             print('rate limit remaining: %d' % posts.rate_limit_remaining)
             next_id = min([int(p.get('id_str')) for p in posts])
@@ -117,6 +120,10 @@ class TwitterHandler(object):
                         continue
 
         return usertweets
+
+    def update_rate_limit(self, response):
+        self.rate_limit_remaining = response.rate_limit_remaining
+        self.rate_limit_reset = response.rate_limit_reset
 
     def reply(self, event, message):
         if event.get('direct_message'):

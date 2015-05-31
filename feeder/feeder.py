@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import functools
 from collections import deque
+import time
 
 import zmqstream
 from zmqstream.publisher import (StreamPublisher, StreamResult,
@@ -11,8 +12,10 @@ from zmqstream.publisher import (StreamPublisher, StreamResult,
 import twittertools
 import poetryutils2 as poetry
 import interactions
+from itercombiner import IterCombiner
 
 """ cleans up stream results and rebroadcasts them """
+
 
 def tweet_filter(source_iter):
     for item in source_iter:
@@ -28,6 +31,7 @@ def stripped_tweet(tweet):
     dict_template = {"text": True, "id_str": True,
                      "user": {"screen_name": True, "name": True}}
     return twittertools.prune_dict(tweet, dict_template)
+
 
 def iter_wrapper(source_iter, key=None):
     """ 
@@ -56,12 +60,15 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None):
         poetry.filters.numeral_filter,
         poetry.filters.ascii_filter,
         poetry.filters.url_filter,
-        poetry.filters.real_word_ratio_filter(0.9)
+        poetry.filters.real_word_ratio_filter(0.8)
     ]
 
-    user_lines = list()
+    # for line in poetry.line_iter(stream, line_filters, key='text'):
+    #     yield StreamResult(StreamResultItem, {'line': line.get('text')})
 
-    for line in poetry.line_iter(stream, line_filters, key='text'):
+    itercombiner = IterCombiner(
+        poetry.line_iter(stream, line_filters, key='text'))
+    for line in itercombiner:
         poem = poet.add_keyed_line(line, key='text')
         yield StreamResult(StreamResultItem, {'line': line.get('text')})
 
@@ -70,33 +77,29 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None):
                 yield StreamResult(StreamResultItem, {'poem': p.to_dict()})
         elif isinstance(poem, poetry.sorting.Poem):
             yield StreamResult(StreamResultItem, {'poem': poem.to_dict()})
-        
+
         # handle user mentions:
-        for user, tweets in twitter.process_user_events():
-            filtered_tweets = [t for t in tweet_filter(tweets) if t]
-            filtered_tweets = poetry.lines(filtered_tweets, line_filters, key='text')
-            payload = {
-            'screen_name': user,
-            'total_count': len(tweets),
-            'filtered_count': len(filtered_tweets)}
-            yield StreamResult(StreamResultItem, {'track-user': payload})
-            for t in filtered_tweets:
-                t['special_user'] = user
-            user_lines.append(t)
-
-
-
-
-
-        
-
-def stream_combiner(sample_iter):
-    """ combines sample and user streams """
-    
-    for item in sample_iter():
-        yield item
-        for user, tweets in twitter.process_user_events():
-
+        if (twitter.rate_limit_remaining > 0 or
+                twitter.rate_limit_reset < int(time.time())):
+            for user, tweets in twitter.process_user_events():
+                filtered_tweets = [t for t in tweet_filter(tweets) if t]
+                filtered_tweets = [t for t in
+                    poetry.line_iter(filtered_tweets, line_filters, key='text')]
+                payload = {
+                    'screen_name': user,
+                    'total_count': len(tweets),
+                    'filtered_count': len(filtered_tweets)}
+                yield StreamResult(StreamResultItem, {'track-user': payload})
+                for t in filtered_tweets:
+                    t['special_user'] = user
+                itercombiner.add_items(filtered_tweets)
+        else:
+            print("at rate limit?")
+            print(twitter.rate_limit_remaining)
+            print("seconds remainging: %d" %
+                  twitter.rate_limit_reset - int(time.time()))
+            yield StreamResult(StreamResultItem,
+                               {'rate-limit': {'reset': twitter.rate_limit_reset}})
 
 
 def main():
@@ -108,14 +111,14 @@ def main():
     parser.add_argument('--portout', type=str, help="port out")
     args = parser.parse_args()
 
-
     source_host = args.hostin or '127.0.0.1'
     source_port = args.portin or 8069
     dest_host = args.hostout or '127.0.0.1'
     dest_port = args.portout or 8070
 
     iterator = functools.partial(line_iter, source_host, source_port)
-
+    # for line in iterator():
+    #     print(line)
     publisher = StreamPublisher(
         iterator=iterator,
         hostname=dest_host,
