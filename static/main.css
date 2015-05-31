@@ -2,16 +2,16 @@
  * Wrapper
  */
 .wrapper {
-  max-width: -webkit-calc(800px - (30px * 2));
-  max-width: calc(800px - (30px * 2));
+  max-width: -webkit-calc(1000px - (30px * 2));
+  max-width: calc(1000px - (30px * 2));
   margin-right: auto;
   margin-left: auto;
   padding-right: 30px;
   padding-left: 30px; }
   @media screen and (max-width: 800px) {
     .wrapper {
-      max-width: -webkit-calc(800px - (30px));
-      max-width: calc(800px - (30px));
+      max-width: -webkit-calc(1000px - (30px));
+      max-width: calc(1000px - (30px));
       padding-right: 15px;
       padding-left: 15px; } }
 
@@ -52,14 +52,25 @@ body {
   margin-top: 60px;
   margin-left: -20px; }
 
+.poem {
+  margin-bottom: 30px; }
+  .poem .user-line {
+    background-color: #fdd; }
+
+#user-list {
+  position: absolute;
+  background-color: #fdd;
+  float: right;
+  margin-top: 500px; }
+
 #left {
   display: block;
-  width: 80%;
+  width: 40%;
   float: left; }
 
 #right {
   display: block;
-  width: 20%;
+  width: 60%;
   float: right; }
 
 /*# sourceMappingURL=main.css.map */

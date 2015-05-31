@@ -58,7 +58,6 @@ class TwitterHandler(object):
         while len(posts) > 1 and self.rate_limit_remaining > 0:
             posts = self.api.statuses.user_timeline(**params)
             self.update_rate_limit(posts)
-            print('fetching items')
             print('rate limit remaining: %d' % posts.rate_limit_remaining)
             next_id = min([int(p.get('id_str')) for p in posts])
             params['max_id'] = next_id
@@ -71,7 +70,7 @@ class TwitterHandler(object):
         while True:
             event = self.stream.next()
             if event != None:
-                print(event)
+                # print(event)
                 events.append(event)
             else:
                 break

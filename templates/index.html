@@ -34,6 +34,65 @@
                         this.list.shift()
                     }
                 }
+            },
+
+            formatLine: function (line) {
+                var classes = 'poem-line'
+                if (line.info.special_user != null) {
+                    classes = classes+' user-line '+line.special_user
+                }
+                return '<div class="'+classes+'"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
+            },
+
+            formatPoem: function (poem) {
+                var lines = poem.lines.map(function(line) {
+                        return poet.formatLine(line)
+                        }).reduce(function(a, b) {
+                            return a + b
+                        });
+                return '<div class="poem">'+lines+'</div>'
+            },
+
+            handleMessage: function (msg) {
+                switch (msg.mtype) {
+                    case "line":
+                        this.recentLines.add(msg.body)
+                        $('#recent-tweets').html( this.recentLines.list.join('<br/>') )
+                        break;
+                    case "poem":
+                        this.displayPoem(msg.body)
+                    case "track-user":
+                        console.log(msg.body)
+                        break;
+                }
+            },
+
+            displayPoem: function (poem) {
+                var formattedPoem = poet.formatPoem(poem)
+                // formattedPoem.fadeIn(1000)
+                switch (poem.poem_type) {
+                    case "haiku":
+                        $(formattedPoem).hide()
+                        .prependTo('#left')
+                        .slideDown('slow')
+
+                        var length = $('#left').length;
+                        if (length > 3) {
+                            $('#left:last-child').remove();
+                        }
+                        break;
+
+                    case "limerick":
+                        $(formattedPoem).hide()
+                        .prependTo('#right')
+                        .slideDown('slow')
+
+                        var length = $('#right').length;
+                        if (length > 3) {
+                            $('#right:last-child').remove();
+                        }
+                        break;
+                }
             }
         }
         </script>
@@ -50,52 +109,49 @@
                                 console.log(e)
                                 console.log(message.data)
                             }
-                            if (msg.mtype == "poem") {
-                                console.log(message.data)
-                                switch (msg.body.poem_type) {
-                                    case "haiku":
-                                        $('.haiku').html ( msg.body.lines.map(function(line) {
-                                        return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
-                                        }).reduce(function(a, b) {
-                                            return a + b
-                                        }));
-                                        break;
-                                    case "limerick":
-                                        $('.limerick').html ( msg.body.lines.map(function(line) {
-                                        return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
-                                        }).reduce(function(a, b) {
-                                            return a + b
-                                        }));
-                                        break;
-                                }
-                                // $('.poem-container').html ( msg.body.lines.map(function(line) {
-                                //     return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
-                                // }).reduce(function(a, b) {
-                                //     return a + b
-                                // }));
-
-                                $( "a" ).click(function( event ) {
-                                    event.preventDefault();
-                                    $('#right').html( " " )
-                                    // console.log($( this ).attr('href'));
-                                    window.twttr.widgets.createTweet(
-                                        $( this ).attr('href'),
-                                        document.getElementById('right'));
-                                    }); 
-                                
-                                console.log(msg.body)
-                               // $('#output').append('<li>'+msg.text+'</li>');
-                            // } else if (msg.mtype == "item") {
-                            //     $('#line').html( msg.text )
-                            } else if (msg.mtype == "line") {
-                                poet.recentLines.add(msg.body)
-                                $('#recent-tweets').html( poet.recentLines.list.join('<br/>') )
-                                // $('#last-line').html( msg.body )
-                                // console.log(window.poet.recentLines.list.length)
-                            }
-                            // console.log('A message has arrived!');
-                         
+                            poet.handleMessage(msg)
                         }
+                    });
+                            // if (msg.mtype == "poem") {
+                            //     console.log(message.data)
+                            //     switch (msg.body.poem_type) {
+                                    // case "haiku":
+                                    //     $('.haiku').html ( msg.body.lines.map(function(line) {
+                                    //     return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
+                                    //     }).reduce(function(a, b) {
+                                    //         return a + b
+                                    //     }));
+                                    //     break;
+                            //         case "limerick":
+                            //             $('.limerick').html ( msg.body.lines.map(function(line) {
+                            //             return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
+                            //             }).reduce(function(a, b) {
+                            //                 return a + b
+                            //             }));
+                            //             break;
+                            //     }
+
+                            //     $( "a" ).click(function( event ) {
+                            //         event.preventDefault();
+                            //         $('#right').html( " " )
+                            //         // console.log($( this ).attr('href'));
+                            //         window.twttr.widgets.createTweet(
+                            //             $( this ).attr('href'),
+                            //             document.getElementById('right'));
+                            //         }); 
+                                
+                            //     console.log(msg.body)
+                            //    // $('#output').append('<li>'+msg.text+'</li>');
+                            // // } else if (msg.mtype == "item") {
+                            // //     $('#line').html( msg.text )
+                            // } else if (msg.mtype == "line") {
+                            //     poet.recentLines.add(msg.body)
+                                
+                            // } else if (msg.mtype == "user") {
+                            //     $('.active-users').html ( '@'+msg.body.screen_name+' '+msg.body.total_count+'/'+msg.body.filtered_count )
+                            // }
+                         
+                        // }
                     // $( "a" ).click(function( event ) {
                     //     event.preventDefault();
                     //     $('#right').html( " " )
@@ -104,7 +160,7 @@
                     //         $( this ).attr('href'),
                     //         document.getElementById('right'));
                     //     });
-                    });
+                    // });
         </script>
     </head>
 
@@ -115,15 +171,16 @@
         </div>
         <div class="wrapper">
         </div>
+        <!-- <div class="active-users">null</div> -->
         <div class="wrapper">
-            <div id="left">
-                <div class="poem-container haiku">
+            <div class="poem-container" id="left"></div>
+            <div class="poem-container" id="right"></div>
+                <!-- <div class="poem-container haiku">
                 </div>
                 <div class="poem-container limerick">
+                </div> -->
                 </div>
-            </div>
-            <div id="right">
-            </div>
+                <div id="user-list"></div>
         </div>
         <!-- <ul id="output">
 

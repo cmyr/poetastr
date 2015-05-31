@@ -63,14 +63,17 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None):
         poetry.filters.real_word_ratio_filter(0.8)
     ]
 
-    # for line in poetry.line_iter(stream, line_filters, key='text'):
-    #     yield StreamResult(StreamResultItem, {'line': line.get('text')})
-
     itercombiner = IterCombiner(
         poetry.line_iter(stream, line_filters, key='text'))
     for line in itercombiner:
         poem = poet.add_keyed_line(line, key='text')
-        yield StreamResult(StreamResultItem, {'line': line.get('text')})
+        if line.get('special_user'):
+            yield StreamResult(StreamResultItem, {'user-line': line.get('text')})
+            if poem:
+                print('poem from special line')    
+                print(str(poem))
+        else:
+            yield StreamResult(StreamResultItem, {'line': line.get('text')})
 
         if isinstance(poem, list):
             for p in poem:
@@ -117,8 +120,8 @@ def main():
     dest_port = args.portout or 8070
 
     iterator = functools.partial(line_iter, source_host, source_port)
-    # for line in iterator():
-    #     print(line)
+    for line in iterator():
+        print(line)
     publisher = StreamPublisher(
         iterator=iterator,
         hostname=dest_host,
