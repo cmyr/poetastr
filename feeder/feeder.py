@@ -68,7 +68,7 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None):
     for line in itercombiner:
         poem = poet.add_keyed_line(line, key='text')
         if line.get('special_user'):
-            yield StreamResult(StreamResultItem, {'user-line': line.get('text')})
+            yield StreamResult(StreamResultItem, {'user-line': line})
             if poem:
                 print('poem from special line')    
                 print(str(poem))
@@ -82,27 +82,27 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None):
             yield StreamResult(StreamResultItem, {'poem': poem.to_dict()})
 
         # handle user mentions:
-        if (twitter.rate_limit_remaining > 0 or
-                twitter.rate_limit_reset < int(time.time())):
-            for user, tweets in twitter.process_user_events():
-                filtered_tweets = [t for t in tweet_filter(tweets) if t]
-                filtered_tweets = [t for t in
-                    poetry.line_iter(filtered_tweets, line_filters, key='text')]
-                payload = {
-                    'screen_name': user,
-                    'total_count': len(tweets),
-                    'filtered_count': len(filtered_tweets)}
-                yield StreamResult(StreamResultItem, {'track-user': payload})
-                for t in filtered_tweets:
-                    t['special_user'] = user
-                itercombiner.add_items(filtered_tweets)
-        else:
-            print("at rate limit?")
-            print(twitter.rate_limit_remaining)
-            print("seconds remainging: %d" %
-                  twitter.rate_limit_reset - int(time.time()))
-            yield StreamResult(StreamResultItem,
-                               {'rate-limit': {'reset': twitter.rate_limit_reset}})
+        # if (twitter.rate_limit_remaining > 0 or
+        #         twitter.rate_limit_reset < int(time.time())):
+        for user, tweets in twitter.process_user_events():
+            filtered_tweets = [t for t in tweet_filter(tweets) if t]
+            filtered_tweets = [t for t in
+                poetry.line_iter(filtered_tweets, line_filters, key='text')]
+            payload = {
+                'screen_name': user,
+                'total_count': len(tweets),
+                'filtered_count': len(filtered_tweets)}
+            yield StreamResult(StreamResultItem, {'track-user': payload})
+            for t in filtered_tweets:
+                t['special_user'] = user
+            itercombiner.add_items(filtered_tweets)
+        # else:
+        #     print("at rate limit?")
+        #     print(twitter.rate_limit_remaining)
+        #     print("seconds remainging: %d" %
+        #           twitter.rate_limit_reset - int(time.time()))
+        #     yield StreamResult(StreamResultItem,
+        #                        {'rate-limit': {'reset': twitter.rate_limit_reset}})
 
 
 def main():

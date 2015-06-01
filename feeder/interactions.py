@@ -20,6 +20,9 @@ from twittercreds import (
     CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
 
 
+# see https://dev.twitter.com/streaming/overview/connecting
+INITIAL_BACKOFF_DURATION = 60  # seconds
+
 class TwitterHandler(object):
 
     """wraps twitter API calls and tracks related state"""
@@ -35,6 +38,8 @@ class TwitterHandler(object):
         self.seen_users = set()
         self.rate_limit_remaining = 200
         self.rate_limit_reset = time.time()
+        self.chill_duration = INITIAL_BACKOFF_DURATION
+        self.chill_until = 0
 
     def load_twitter(self):
         return Twitter(auth=self.auth, api_version='1.1')
@@ -58,7 +63,12 @@ class TwitterHandler(object):
         while len(posts) > 1 and self.rate_limit_remaining > 0:
             posts = self.api.statuses.user_timeline(**params)
             self.update_rate_limit(posts)
+            self.chill_duration = INITIAL_BACKOFF_DURATION
             print('rate limit remaining: %d' % posts.rate_limit_remaining)
+            ids = [int(p.get('id_str')) for p in posts]
+            # had a weird crash here?
+            if len(ids) == 0:
+                break
             next_id = min([int(p.get('id_str')) for p in posts])
             params['max_id'] = next_id
             tweets.extend(posts)
@@ -91,6 +101,9 @@ class TwitterHandler(object):
     def process_user_events(self):
         """ handle mentions etc """
         usertweets = list()
+        if self.chill_until >= time.time():
+            return usertweets
+
         for event in self.new_user_events():
             tweet = event.get('direct_message') or event
             text = tweet.get('text', '')
@@ -108,6 +121,9 @@ class TwitterHandler(object):
                         tweets = self.fetch_posts(user)
                         usertweets.append((user, tweets))
                     except TwitterHTTPError as err:
+                        if err.e.code == 420:
+                            print('~~~~ ERROR 420 ~~~~')
+                            self.chill_out()
                         print("error error error")
                         # sender = tweet.get('user')
                         msg = "an unknown error occured. :("
@@ -123,6 +139,12 @@ class TwitterHandler(object):
     def update_rate_limit(self, response):
         self.rate_limit_remaining = response.rate_limit_remaining
         self.rate_limit_reset = response.rate_limit_reset
+
+
+    def chill_out(self):
+        self.chill_until = time.time() + self.chill_duration
+        self.chill_duration *= 2
+
 
     def reply(self, event, message):
         if event.get('direct_message'):

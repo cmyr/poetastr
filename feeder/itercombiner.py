@@ -12,7 +12,7 @@ class IterCombiner(object):
     determined by the `ratio` argument.
     """
 
-    def __init__(self, base_iter, other_items=None, ratio=0.5):
+    def __init__(self, base_iter, other_items=None, ratio=0.75):
         super(IterCombiner, self).__init__()
         self.base_iter = iter(base_iter)
         self._other_items = deque()
