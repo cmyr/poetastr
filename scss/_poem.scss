@@ -9,19 +9,23 @@ body {
 }
 
 #recent-tweets {
-	// height: 300px;
 	position: absolute;
 	z-index: -1;
 	font-size: $base-font-size * 4;
 	font-weight: 400;
 	line-height: 1;
-
 	color: #eee;
+
+	p {
+		margin: 0;
+		padding: 0;
+	}
 }
 
 .poem-container {
 	font-family: $poem-font-family;
 	// font-family: Courier, mono;
+
 	a {
 		text-decoration: none;
 		color: #000;
@@ -38,11 +42,21 @@ body {
 
 .poem {
 	margin-bottom: 30px;
-	// display: none;
 
+	&:not(:last-of-type) {
+		border-bottom: 1px solid black;
+	}
+	
 	.user-line {
 		background-color: #fdd;
 	}	
+}
+
+.active-users {
+	float: right;
+	position: absolute;
+	margin-top: 20px;
+	margin-right: 20px;
 }
 
 #user-list {

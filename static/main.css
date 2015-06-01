@@ -2,16 +2,16 @@
  * Wrapper
  */
 .wrapper {
-  max-width: -webkit-calc(1000px - (30px * 2));
-  max-width: calc(1000px - (30px * 2));
+  max-width: -webkit-calc(90% - (30px * 2));
+  max-width: calc(90% - (30px * 2));
   margin-right: auto;
   margin-left: auto;
   padding-right: 30px;
   padding-left: 30px; }
   @media screen and (max-width: 800px) {
     .wrapper {
-      max-width: -webkit-calc(1000px - (30px));
-      max-width: calc(1000px - (30px));
+      max-width: -webkit-calc(90% - (30px));
+      max-width: calc(90% - (30px));
       padding-right: 15px;
       padding-left: 15px; } }
 
@@ -39,9 +39,12 @@ body {
   font-weight: 400;
   line-height: 1;
   color: #eee; }
+  #recent-tweets p {
+    margin: 0;
+    padding: 0; }
 
 .poem-container {
-  font-family: "Times New Roman", Times, Georgia, serif; }
+  font-family: Helvetica, sans-serif; }
   .poem-container a {
     text-decoration: none;
     color: #000;
@@ -54,8 +57,16 @@ body {
 
 .poem {
   margin-bottom: 30px; }
+  .poem:not(:last-of-type) {
+    border-bottom: 1px solid black; }
   .poem .user-line {
     background-color: #fdd; }
+
+.active-users {
+  float: right;
+  position: absolute;
+  margin-top: 20px;
+  margin-right: 20px; }
 
 #user-list {
   position: absolute;

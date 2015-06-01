@@ -5,6 +5,7 @@
         <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" media="all" />
 
         
+        <script type="text/javascript" src="{{ url_for('static', filename='randomColor.js') }}"></script>
         <script type="text/javascript" src="//code.jquery.com/jquery-1.8.0.min.js"></script>
         <script>window.twttr = (function(d, s, id) {
           var js, fjs = d.getElementsByTagName(s)[0],
@@ -26,20 +27,48 @@
         <script type="text/javascript">
         poet = {
             recentLines : {
-                maxLength: 10,
+                maxLength: 15,
                 list: Array(),
                 add: function (item) {
-                    this.list.push(item)
-                    if (this.list.length > this.maxLength) {
-                        this.list.shift()
-                    }
+                    $('<p>'+item+'</p>').hide()
+                    .prependTo('#recent-tweets')
+                    .slideDown('fast');
+
+                    // var length = $('#left').children().length;
+                        // console.log('haiku length: '+length)
+                        if ($('#recent-tweets').children().length > this.maxLength) {
+                            $('#recent-tweets p:last').slideDown('fast')
+                            .remove();
+                        }
+                    // this.list.push(item)
+                    // if (this.list.length > this.maxLength) {
+                    //     this.list.shift()
+                    // }
+                }
+            },
+
+            activeUsers: {
+                users: Object(),
+                addUser: function (user) {
+                    user.color = randomColor()
+                    user.remainingLines = user.filtered_count
+                    this.users[user.screen_name] = user
+                    document.styleSheets[0].cssRules[0].cssText = '.user-'+user.screen_name+' { color: '+user.color+ '};'
+                },
+                
+                colorForUser: function (user) {
+                    return this.users[user].color
+                },
+
+                sawLineForUser: function (user) {
+                    this.users[user].remainingLines--
                 }
             },
 
             formatLine: function (line) {
                 var classes = 'poem-line'
                 if (line.info.special_user != null) {
-                    classes = classes+' user-line '+line.special_user
+                    classes = classes+' user-line user-'+line.special_user
                 }
                 return '<div class="'+classes+'"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
             },
@@ -57,12 +86,25 @@
                 switch (msg.mtype) {
                     case "line":
                         this.recentLines.add(msg.body)
-                        $('#recent-tweets').html( this.recentLines.list.join('<br/>') )
+                        // $('#recent-tweets').html( this.recentLines.list.join('<br/>') )
+                        break;
+                    case "user-line":
+                        this.recentLines.add(msg.body.text)
+                        // $('#recent-tweets').html( this.recentLines.list.join('<br/>') )
+                        console.log(msg)
+                        this.activeUsers.sawLineForUser(msg.body.special_user)
                         break;
                     case "poem":
                         this.displayPoem(msg.body)
+                        break;
                     case "track-user":
-                        console.log(msg.body)
+                        this.activeUsers.addUser(msg.body)
+                        console.log('active users:')
+                        console.log(this.activeUsers)
+                        var formattedUser = '<div class="active-user user-'+msg.body.screen_name+'">'+msg.body.screen_name+'</div>'
+                        $(formattedUser).hide()
+                        .prependTo('.active-users')
+                        .fadeIn('slow');
                         break;
                 }
             },
@@ -76,9 +118,11 @@
                         .prependTo('#left')
                         .slideDown('slow')
 
-                        var length = $('#left').length;
-                        if (length > 3) {
-                            $('#left:last-child').remove();
+                        var length = $('#left').children().length;
+                        console.log('haiku length: '+length)
+                        if (length > 5) {
+                            $('#left div.poem:last').fadeOut('slow')
+                            .remove();
                         }
                         break;
 
@@ -112,66 +156,17 @@
                             poet.handleMessage(msg)
                         }
                     });
-                            // if (msg.mtype == "poem") {
-                            //     console.log(message.data)
-                            //     switch (msg.body.poem_type) {
-                                    // case "haiku":
-                                    //     $('.haiku').html ( msg.body.lines.map(function(line) {
-                                    //     return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
-                                    //     }).reduce(function(a, b) {
-                                    //         return a + b
-                                    //     }));
-                                    //     break;
-                            //         case "limerick":
-                            //             $('.limerick').html ( msg.body.lines.map(function(line) {
-                            //             return '<div class="poem-line"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>'
-                            //             }).reduce(function(a, b) {
-                            //                 return a + b
-                            //             }));
-                            //             break;
-                            //     }
-
-                            //     $( "a" ).click(function( event ) {
-                            //         event.preventDefault();
-                            //         $('#right').html( " " )
-                            //         // console.log($( this ).attr('href'));
-                            //         window.twttr.widgets.createTweet(
-                            //             $( this ).attr('href'),
-                            //             document.getElementById('right'));
-                            //         }); 
-                                
-                            //     console.log(msg.body)
-                            //    // $('#output').append('<li>'+msg.text+'</li>');
-                            // // } else if (msg.mtype == "item") {
-                            // //     $('#line').html( msg.text )
-                            // } else if (msg.mtype == "line") {
-                            //     poet.recentLines.add(msg.body)
-                                
-                            // } else if (msg.mtype == "user") {
-                            //     $('.active-users').html ( '@'+msg.body.screen_name+' '+msg.body.total_count+'/'+msg.body.filtered_count )
-                            // }
-                         
-                        // }
-                    // $( "a" ).click(function( event ) {
-                    //     event.preventDefault();
-                    //     $('#right').html( " " )
-                    //     console.log($( this ).attr('href'));
-                    //     window.twttr.widgets.createTweet(
-                    //         $( this ).attr('href'),
-                    //         document.getElementById('right'));
-                    //     });
-                    // });
         </script>
     </head>
 
     <body>
 
-        <h2>Demo</h2>
+        <h2>poet.py</h2>
         <div id="recent-tweets">
         </div>
         <div class="wrapper">
         </div>
-        <!-- <div class="active-users">null</div> -->
+        <div class="active-users">null</div>
         <div class="wrapper">
             <div class="poem-container" id="left"></div>
             <div class="poem-container" id="right"></div>
