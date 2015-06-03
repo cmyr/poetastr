@@ -17,7 +17,7 @@ poet = {
 					if (typeof(this._counts[poemType]) == "undefined") {
 						this._counts[poemType] = 1
 					} else {
-						this_counts[poemType]++
+						this._counts[poemType]++
 					}
 				}
 			},
@@ -69,7 +69,7 @@ poet = {
                         }).reduce(function(a, b) {
                             return a + b
                         });
-                return title+'<div class="poem">'+lines+'</div>'
+                return '<div class="poem">'+title+lines+'</div>'
             },
 
             handleMessage: function (msg) {

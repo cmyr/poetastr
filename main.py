@@ -21,11 +21,15 @@ def encode_message(message_type, body):
 
 EXPECTED_KEYS = set(['line', 'user-line', 'poem', 'track-user', 'rate-limit'])
 
-def poet_sse_iter(host="127.0.0.1", port="8070", debug=False):
+def poet_sse_iter(host="127.0.0.1", port="8070", debug=False, remote=True):
     """
     connects to the zmq feeder and turns results into server-sent-events
     """
-    for item in zmqstream.zmq_iter(host, port):
+    kwargs = {}
+    if remote:
+        kwargs = {'tunnel': 'pcmyr@h.cmyr.net:51415'}
+    iterator = zmqstream.zmq_iter(host, port, **kwargs)
+    for item in iterator:
         assert(len(item) == 1), item
         key, payload = item.items()[0]
         assert(key in EXPECTED_KEYS)
