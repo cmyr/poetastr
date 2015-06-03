@@ -43,7 +43,8 @@ poet = {
                     user.color = randomColor();
                     user.remainingLines = user.filtered_count;
                     this.users[user.screen_name] = user;
-                    document.styleSheets[0].cssRules[0].cssText = '.user-'+user.screen_name+' { color: '+user.color+ '};';
+                    // document.styleSheets[0].cssRules[0].cssText = '.user-'+user.screen_name+' { color: '+user.color+ '};';
+                    // this.showNewActiveUser
                 },
                 
                 colorForUser: function (user) {
@@ -57,7 +58,7 @@ poet = {
 
             formatLine: function (line) {
                 var classes = 'poem-line';
-                if (line.info.special_user !== null) {
+                if (line.info.special_user != null) {
                     classes = classes+' user-line user-'+line.special_user;
                 }
                 return '<div class="'+classes+'"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>';
@@ -77,11 +78,9 @@ poet = {
                 switch (msg.mtype) {
                     case "line":
                         this.recentLines.add(msg.body);
-                        // $('#recent-tweets').html( this.recentLines.list.join('<br/>') )
                         break;
                     case "user-line":
                         this.recentLines.add(msg.body.text);
-                        // $('#recent-tweets').html( this.recentLines.list.join('<br/>') )
                         console.log(msg);
                         this.activeUsers.sawLineForUser(msg.body.special_user);
                         break;
@@ -91,12 +90,14 @@ poet = {
                         break;
                     case "track-user":
                         this.activeUsers.addUser(msg.body);
-                        console.log('active users:');
-                        console.log(this.activeUsers);
-                        var formattedUser = '<div class="active-user user-'+msg.body.screen_name+'">'+msg.body.screen_name+'</div>';
-                        $(formattedUser).hide()
-                        .prependTo('.active-users')
-                        .fadeIn('slow');
+                        this.showNewActiveUser(msg.body);
+                        console.log(msg.body.screen_name);
+                        // console.log('active users:');
+                        // console.log(this.activeUsers);
+                        // var formattedUser = '<div class="active-user user-'+msg.body.screen_name+'">'+msg.body.screen_name+'</div>';
+                        // $(formattedUser).hide()
+                        // .prependTo('.active-users')
+                        // .fadeIn('slow');
                         break;
                 }
             },
@@ -129,7 +130,11 @@ poet = {
             },
 
             showNewActiveUser: function (newUser) {
-            	
+            	var formattedUser = '<div class="active-user">'+newUser.screen_name+'</div>';
+            	$(formattedUser).hide()
+            	.appendTo('.active-users')
+            	.fadeIn('slow')
+            	.delay(20000)
+            	.fadeOut('slow');
             }
-
         };

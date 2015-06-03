@@ -10,6 +10,8 @@ from __future__ import unicode_literals
 import re
 import os
 import time
+import threading
+
 import twittertools
 
 from twitter.api import Twitter, TwitterError, TwitterHTTPError
@@ -36,6 +38,20 @@ class TwitterHandler(object):
         self.rate_limit_reset = time.time()
         self.chill_duration = INITIAL_BACKOFF_DURATION
         self.chill_until = 0
+        self.thread = None
+        self._userstweets = None
+
+    # this is set in a background thread so we check thread status before touching
+    # this could easily be using a lock or something
+    @property
+    def userstweets(self):
+        if self.thread and self.thread.isAlive():
+            return None
+        elif isinstance(self._userstweets, list):
+            result = list(self._userstweets)
+            self._userstweets = None
+            return result
+
 
     def load_twitter(self):
         return Twitter(auth=self.auth, api_version='1.1')
@@ -96,9 +112,15 @@ class TwitterHandler(object):
 
     def process_user_events(self):
         """ handle mentions etc """
+        if not self.thread or not self.thread.isAlive():
+            self.thread = threading.Thread(target=self._process_events)
+            self.thread.start()
+
+
+    def _process_events(self):
         usertweets = list()
         if self.chill_until >= time.time():
-            return usertweets
+            return
 
         for event in self.new_user_events():
             tweet = event.get('direct_message') or event
@@ -121,7 +143,6 @@ class TwitterHandler(object):
                             print('~~~~ ERROR 420 ~~~~')
                             self.chill_out()
                         print("error error error")
-                        # sender = tweet.get('user')
                         msg = "an unknown error occured. :("
                         if err.e.code == 401:
                             msg = "unable to access @%s. Is it a private account?" % user
@@ -129,8 +150,7 @@ class TwitterHandler(object):
                             msg = "the use @%s doesn't appear to exist." % user
                         self.reply(event, msg)
                         continue
-
-        return usertweets
+        self._userstweets = usertweets
 
     def update_rate_limit(self, response):
         self.rate_limit_remaining = response.rate_limit_remaining

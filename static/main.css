@@ -43,6 +43,13 @@ body {
     margin: 0;
     padding: 0; }
 
+#tweets-seen {
+  margin-left: 20px;
+  font-weight: 300;
+  font-size: 16px; }
+  #tweets-seen span {
+    font-weight: 400; }
+
 .poem-container {
   font-family: "Vollkorn", serif; }
   .poem-container a {
@@ -61,17 +68,17 @@ body {
   font-size: 28.8px; }
   .poem h3 {
     font-style: italic;
-    font-style: 28.8px;
+    font-size: 28.8px;
     font-weight: normal;
     margin: 10px 0; }
   .poem .user-line {
     background-color: #fdd; }
 
 .active-users {
-  float: right;
   position: absolute;
-  margin-top: 20px;
-  margin-right: 20px; }
+  right: 20px; }
+  .active-users .active-user {
+    font-weight: 400; }
 
 #user-list {
   position: absolute;

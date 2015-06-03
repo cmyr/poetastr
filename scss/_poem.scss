@@ -22,6 +22,15 @@ body {
 	}
 }
 
+#tweets-seen {
+	margin-left: 20px;
+	font-weight: 300;
+	font-size: $base-font-size;
+
+	span {
+		font-weight: 400;
+	}
+}
 .poem-container {
 	font-family: $poem-font-family;
 	// font-family: Courier, mono;
@@ -51,7 +60,7 @@ body {
 
 	h3 {
 		font-style: italic;
-		font-style: $base-font-size * 1.8;
+		font-size: $base-font-size * 1.8;
 		font-weight: normal;
 		margin: 10px 0;
 	}
@@ -62,10 +71,13 @@ body {
 }
 
 .active-users {
-	float: right;
 	position: absolute;
-	margin-top: 20px;
-	margin-right: 20px;
+	right: 20px;
+
+	.active-user {
+		font-weight: 400;
+
+	}
 }
 
 #user-list {

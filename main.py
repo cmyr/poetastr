@@ -14,6 +14,8 @@ import zmqstream
 
 app = Flask(__name__)
 
+TUNNEL = None
+
 def encode_message(message_type, body):
     jsonable = {'mtype': message_type, 'body': body}
     return 'data: %s\n\n' % json.dumps(jsonable)
@@ -21,13 +23,13 @@ def encode_message(message_type, body):
 
 EXPECTED_KEYS = set(['line', 'user-line', 'poem', 'track-user', 'rate-limit'])
 
-def poet_sse_iter(host="127.0.0.1", port="8070", debug=False, remote=True):
+def poet_sse_iter(host="127.0.0.1", port="8070", debug=False):
     """
     connects to the zmq feeder and turns results into server-sent-events
     """
     kwargs = {}
-    if remote:
-        kwargs = {'tunnel': 'pcmyr@h.cmyr.net:51415'}
+    if TUNNEL:
+        kwargs = {'tunnel': TUNNEL}
     iterator = zmqstream.zmq_iter(host, port, **kwargs)
     for item in iterator:
         assert(len(item) == 1), item
@@ -49,10 +51,18 @@ def sse_request():
 def page():
     return render_template('index.html')
 
-if __name__ == '__main__':
-    # for line in poem_source('192.168.1.103'):
-    # for line in poet_sse_iter():
-    #     print("%s %s" % (line.get('mtype'), line.get('body', line)))
-    # print('hi')
+def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', '--tunnel', type=str, help="sever for tunneling over ssh")
+    args = parser.parse_args()
+    if args.tunnel:
+        global TUNNEL
+        TUNNEL = args.tunnel
+
+
     http_server = WSGIServer(('127.0.0.1', 8001), app)
     http_server.serve_forever()
+
+if __name__ == '__main__':
+    main()

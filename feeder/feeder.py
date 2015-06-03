@@ -64,7 +64,9 @@ def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None):
         poetry.filters.url_filter,
         poetry.filters.real_word_ratio_filter(0.8),
         poetry.filters.hashtag_filter,
-        poetry.filters.screenname_filter
+        poetry.filters.screenname_filter,
+        poetry.filters.low_letter_filter(0.8),
+        poetry.filters.bad_swears_filter()
     ]
 
     itercombiner = IterCombiner(
@@ -85,18 +87,23 @@ def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None):
         # handle user mentions:
         # if (twitter.rate_limit_remaining > 0 or
         #         twitter.rate_limit_reset < int(time.time())):
-        for user, tweets in twitter.process_user_events():
-            filtered_tweets = [t for t in tweet_filter(tweets) if t]
-            filtered_tweets = [t for t in
-                poetry.line_iter(filtered_tweets, line_filters, key='text')]
-            payload = {
-                'screen_name': user,
-                'total_count': len(tweets),
-                'filtered_count': len(filtered_tweets)}
-            yield StreamResult(StreamResultItem, {'track-user': payload})
-            for t in filtered_tweets:
-                t['special_user'] = user
-            itercombiner.add_items(filtered_tweets)
+        usertweets = twitter.userstweets
+        if usertweets:
+            print('found user')
+            for user, tweets in usertweets:
+                filtered_tweets = [t for t in tweet_filter(tweets) if t]
+                filtered_tweets = [t for t in
+                    poetry.line_iter(filtered_tweets, line_filters, key='text')]
+                payload = {
+                    'screen_name': user,
+                    'total_count': len(tweets),
+                    'filtered_count': len(filtered_tweets)}
+                yield StreamResult(StreamResultItem, {'track-user': payload})
+                for t in filtered_tweets:
+                    t['special_user'] = user
+                itercombiner.add_items(filtered_tweets)
+        else:
+            twitter.process_user_events()
         # else:
         #     print("at rate limit?")
         #     print(twitter.rate_limit_remaining)
