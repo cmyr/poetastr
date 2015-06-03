@@ -1,6 +1,7 @@
 poet = {
 			linesSeen: 0,
 			poemsSeen: 0,
+            // activeUsers: 0,
 			poemSeenCounts: {
 				_counts: {},
 				countForPoemType: function( poemType )	{
@@ -37,31 +38,16 @@ poet = {
                 }
             },
 
-            activeUsers: {
-                users: {},
-                addUser: function (user) {
-                    user.color = randomColor();
-                    user.remainingLines = user.filtered_count;
-                    this.users[user.screen_name] = user;
-                    // document.styleSheets[0].cssRules[0].cssText = '.user-'+user.screen_name+' { color: '+user.color+ '};';
-                    // this.showNewActiveUser
-                },
-                
-                colorForUser: function (user) {
-                    return this.users[user].color;
-                },
-
-                sawLineForUser: function (user) {
-                    this.users[user].remainingLines--;
-                }
-            },
-
             formatLine: function (line) {
                 var classes = 'poem-line';
+                var username = "";
                 if (line.info.special_user != null) {
-                    classes = classes+' user-line user-'+line.special_user;
+                    classes = classes+' user-line user-'+line.info.special_user;
+                    username = '— @'+line.info.special_user;
                 }
-                return '<div class="'+classes+'"><a class="line-link" href="'+line.info.id_str+'">'+line.info.text+'</a></div>';
+                return '<div class="'+classes+'">'+
+                '<a class="line-link" link="'+line.info.id_str+'" href="#">'+line.info.text+
+                '</a>'+'<span class="user-name">'+username+'</span>'+'</div>';
             },
 
             formatPoem: function (poem) {
@@ -81,23 +67,16 @@ poet = {
                         break;
                     case "user-line":
                         this.recentLines.add(msg.body.text);
-                        console.log(msg);
-                        this.activeUsers.sawLineForUser(msg.body.special_user);
+                        // this.activeUsers.sawLineForUser(msg.body.special_user);
                         break;
                     case "poem":
                     	this.poemSeenCounts.sawPoemOfType(msg.body.poem_type);
                         this.displayPoem(msg.body);
                         break;
                     case "track-user":
-                        this.activeUsers.addUser(msg.body);
+                        // this.activeUsers.addUser(msg.body);
                         this.showNewActiveUser(msg.body);
                         console.log(msg.body.screen_name);
-                        // console.log('active users:');
-                        // console.log(this.activeUsers);
-                        // var formattedUser = '<div class="active-user user-'+msg.body.screen_name+'">'+msg.body.screen_name+'</div>';
-                        // $(formattedUser).hide()
-                        // .prependTo('.active-users')
-                        // .fadeIn('slow');
                         break;
                 }
             },
@@ -129,12 +108,37 @@ poet = {
                 }
             },
 
+            activeUsers: {
+            	_userCount: 0,
+            	increment: function () {
+            		this._userCount++;
+            		if (this._userCount == 1) {
+            			// show element
+            			console.log('toggling on?');
+            			$('.active-users').slideToggle();
+            		}
+            	},
+            	decrement: function () {
+            		this._userCount--;
+            		if (this._userCount === 0) {
+            			// show element
+            			$('.active-users').slideToggle();
+            			console.log('toggling off?');
+            		}
+            	}
+            },
+
             showNewActiveUser: function (newUser) {
-            	var formattedUser = '<div class="active-user">'+newUser.screen_name+'</div>';
+            	var formattedUser = '<div class="active-user"><span>@'+newUser.screen_name+'</span></div>';
+            	
+            	this.activeUsers.increment();
             	$(formattedUser).hide()
             	.appendTo('.active-users')
             	.fadeIn('slow')
-            	.delay(20000)
-            	.fadeOut('slow');
+            	.delay(60000)
+            	.fadeOut('slow', function() {
+            		$(this).remove();
+            		poet.activeUsers.decrement();
+            	});
             }
         };

@@ -66,19 +66,42 @@ body {
 	}
 	
 	.user-line {
-		background-color: #fdd;
+		// background-color: #fdd;
+		position: relative;
+
+		.user-name {
+			font-family: $base-font-family;
+			font-size: $base-font-size * 0.75;
+			font-weight: 300;
+			font-style: italic;
+			margin-left: 10px;
+			vertical-align: middle;
+		}
 	}	
 }
 
 .active-users {
 	position: absolute;
-	right: 20px;
+	background-color: #fff;
+	right: 0px;
+	-webkit-box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);
+	-moz-box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);
+	box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);
+	font-weight: 400;	
+		padding: 5px;
+	
+	div {
+		padding: 5px 0px;
+	}
 
 	.active-user {
-		font-weight: 400;
-
+		border-top: 1px solid #ddd;
 	}
+	// .active-user:not(:last-of-type) {
+			// border-bottom: 1px solid #ddd;
+	// }
 }
+
 
 #user-list {
 	position: absolute;
