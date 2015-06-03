@@ -60,7 +60,9 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None):
         poetry.filters.numeral_filter,
         poetry.filters.ascii_filter,
         poetry.filters.url_filter,
-        poetry.filters.real_word_ratio_filter(0.8)
+        poetry.filters.real_word_ratio_filter(0.8),
+        poetry.filters.hashtag_filter,
+        poetry.filters.screenname_filter
     ]
 
     itercombiner = IterCombiner(

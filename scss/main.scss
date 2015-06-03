@@ -1,8 +1,13 @@
 
 // Our variables
-$base-font-family: Helvetica, sans-serif;
+// $base-font-family: Futura, serif;
+// $base-font-family: "HelveticaNeueLight", "HelveticaNeue-Light", "Helvetica Neue Light", "HelveticaNeue", "Helvetica Neue", 'TeXGyreHerosRegular', "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif; 
+$base-font-family: "HelveticaNeueThin", "HelveticaNeue-Thin", "Helvetica Neue Thin", "HelveticaNeue", "Helvetica Neue", serif;
+$base-font-weight: 100; 
+	// font-weight:300; 
+	// font-stretch:normal;
 // $poem-font-family: "Times New Roman", Times, Georgia, serif;
-$poem-font-family: Helvetica, sans-serif;
+$poem-font-family: 'Vollkorn', serif; //Helvetica, sans-serif;
 $base-font-size:   16px;
 $small-font-size:  $base-font-size * 0.875;
 $base-line-height: 1.5;

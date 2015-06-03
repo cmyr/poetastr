@@ -2,7 +2,7 @@ body {
     font-family: $base-font-family;
     font-size: $base-font-size;
     line-height: $base-line-height;
-    font-weight: 300;
+    font-weight: $base-font-weight;
     color: $text-color;
     background-color: $background-color;
     -webkit-text-size-adjust: 100%;
@@ -12,7 +12,7 @@ body {
 	position: absolute;
 	z-index: -1;
 	font-size: $base-font-size * 4;
-	font-weight: 400;
+	font-weight: 200;
 	line-height: 1;
 	color: #eee;
 
@@ -29,7 +29,7 @@ body {
 	a {
 		text-decoration: none;
 		color: #000;
-		font-size: $base-font-size * 1.5;
+		// font-size: $base-font-size * 1.5;
 	}
 }
 
@@ -41,10 +41,19 @@ body {
 
 
 .poem {
-	margin-bottom: 30px;
-
+	margin-bottom: 60px;
+	margin-left: 30px;
+	width: auto;
+	font-size: $base-font-size * 1.8;
 	&:not(:last-of-type) {
-		border-bottom: 1px solid black;
+		// border-bottom: 1px solid #ccc;
+	}
+
+	h3 {
+		font-style: italic;
+		font-style: $base-font-size * 1.8;
+		font-weight: normal;
+		margin: 10px 0;
 	}
 	
 	.user-line {

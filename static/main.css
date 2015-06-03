@@ -24,10 +24,10 @@
   clear: both; }
 
 body {
-  font-family: Helvetica, sans-serif;
+  font-family: "HelveticaNeueThin", "HelveticaNeue-Thin", "Helvetica Neue Thin", "HelveticaNeue", "Helvetica Neue", serif;
   font-size: 16px;
   line-height: 1.5;
-  font-weight: 300;
+  font-weight: 100;
   color: #111;
   background-color: #fdfdfd;
   -webkit-text-size-adjust: 100%; }
@@ -36,7 +36,7 @@ body {
   position: absolute;
   z-index: -1;
   font-size: 64px;
-  font-weight: 400;
+  font-weight: 200;
   line-height: 1;
   color: #eee; }
   #recent-tweets p {
@@ -44,11 +44,10 @@ body {
     padding: 0; }
 
 .poem-container {
-  font-family: Helvetica, sans-serif; }
+  font-family: "Vollkorn", serif; }
   .poem-container a {
     text-decoration: none;
-    color: #000;
-    font-size: 24px; }
+    color: #000; }
 
 .limerick {
   position: relative;
@@ -56,9 +55,15 @@ body {
   margin-left: -20px; }
 
 .poem {
-  margin-bottom: 30px; }
-  .poem:not(:last-of-type) {
-    border-bottom: 1px solid black; }
+  margin-bottom: 60px;
+  margin-left: 30px;
+  width: auto;
+  font-size: 28.8px; }
+  .poem h3 {
+    font-style: italic;
+    font-style: 28.8px;
+    font-weight: normal;
+    margin: 10px 0; }
   .poem .user-line {
     background-color: #fdd; }
 
