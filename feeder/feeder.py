@@ -6,6 +6,8 @@ import functools
 from collections import deque
 import time
 
+from twitter.oauth import OAuth
+
 import zmqstream
 from zmqstream.publisher import (StreamPublisher, StreamResult,
                                  StreamResultError, StreamResultItem)
@@ -49,12 +51,12 @@ def iter_wrapper(source_iter, key=None):
         yield i
 
 
-def line_iter(host="127.0.0.1", port="8069", request_kwargs=None):
+def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None):
     poets = [poetry.sorting.Limericker(), poetry.sorting.Haikuer()]
     poet = poetry.sorting.MultiPoet(poets=poets)
 
     stream = tweet_filter(zmqstream.zmq_iter(host=host, port=port))
-    twitter = interactions.TwitterHandler()
+    twitter = interactions.TwitterHandler(auth=user_auth)
 
     line_filters = [
         poetry.filters.numeral_filter,
@@ -71,9 +73,6 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None):
         poem = poet.add_keyed_line(line, key='text')
         if line.get('special_user'):
             yield StreamResult(StreamResultItem, {'user-line': line})
-            if poem:
-                print('poem from special line')    
-                print(str(poem))
         else:
             yield StreamResult(StreamResultItem, {'line': line.get('text')})
 
@@ -110,6 +109,7 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None):
 def main():
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument('auth', type=str, help="path to twitter auth token")
     parser.add_argument('--hostin', type=str, help="source host")
     parser.add_argument('--portin', type=str, help="source port")
     parser.add_argument('--hostout', type=str, help="host out")
@@ -121,7 +121,12 @@ def main():
     dest_host = args.hostout or '127.0.0.1'
     dest_port = args.portout or 8070
 
-    iterator = functools.partial(line_iter, source_host, source_port)
+    creds = twittertools.load_auth(args.auth, raw=True)
+    # the OAuth object in the twitter module has different positional arguments
+    # then the requests OAuth module used in my own streaming implementation
+    auth = OAuth(creds[2], creds[3], creds[0], creds[1])
+
+    iterator = functools.partial(line_iter, auth, source_host, source_port)
     for line in iterator():
         print(line)
     publisher = StreamPublisher(

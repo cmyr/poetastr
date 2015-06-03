@@ -16,9 +16,6 @@ from twitter.api import Twitter, TwitterError, TwitterHTTPError
 from twitter.stream import TwitterStream, Timeout, HeartbeatTimeout, Hangup
 from twitter.oauth import OAuth
 
-from twittercreds import (
-    CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
-
 
 # see https://dev.twitter.com/streaming/overview/connecting
 INITIAL_BACKOFF_DURATION = 60  # seconds
@@ -27,10 +24,9 @@ class TwitterHandler(object):
 
     """wraps twitter API calls and tracks related state"""
 
-    def __init__(self):
+    def __init__(self, auth):
         super(TwitterHandler, self).__init__()
-        self.auth = OAuth(
-            ACCESS_KEY, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
+        self.auth = auth
         self.api = self.load_twitter()
         self.stream = self.load_stream()
         self.last_mention = None
