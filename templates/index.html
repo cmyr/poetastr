@@ -2,13 +2,12 @@
 <html>
 
     <head>
-        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" media="all" />
-        <link href='http://fonts.googleapis.com/css?family=Vollkorn' rel='stylesheet' type='text/css'>
-
-        
-        <script type="text/javascript" src="{{ url_for('static', filename='randomColor.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
         <script type="text/javascript" src="//code.jquery.com/jquery-1.8.0.min.js"></script>
+        <link href='http://fonts.googleapis.com/css?family=Vollkorn' rel='stylesheet' type='text/css'>
+        <!-- randomColor: https://github.com/davidmerfield/randomColor -->
+        <script type="text/javascript" src="{{ url_for('static', filename='randomColor.js') }}"></script>
+            <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" media="all" />
+        <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
         <script>window.twttr = (function(d, s, id) {
           var js, fjs = d.getElementsByTagName(s)[0],
             t = window.twttr || {};
@@ -33,21 +32,22 @@
                         sse.onmessage = function(message) {
                             // console.log(message)
                             try {
-                                var msg = jQuery.parseJSON(message.data)
+                                var msg = jQuery.parseJSON(message.data);
+                                poet.handleMessage(msg);
                             } 
                             catch (e) {
-                                console.log(e)
-                                console.log(message.data)
+                                console.log(e);
+                                console.log(message.data);
                             }
-                            poet.handleMessage(msg)
-                        }
+                        };
                     });
         </script>
     </head>
 
     <body>
-
-        <h2>poet.py</h2>
+    <header>
+        <h2>poet.py<span id='tweets-seen'>Tweets seen: <span class='nodometer'>0</span></span></h2>
+    </header>
         <div id="recent-tweets">
         </div>
         <div class="wrapper">
