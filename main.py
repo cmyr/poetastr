@@ -8,9 +8,12 @@ gevent.monkey.patch_all()
 
 from flask import Flask, request, Response, render_template
 
-import poetryutils2 as poetry
-import twittertools
-import zmqstream
+try:
+    import zmqstream
+except ImportError:
+    import sys
+    sys.path.append('../twitter-zmq-stream')
+    import zmqstream
 
 app = Flask(__name__)
 
