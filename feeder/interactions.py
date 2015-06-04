@@ -126,6 +126,8 @@ class TwitterHandler(object):
         usertweets = list()
 
         for event in self.new_user_events():
+            if self.rate_limit_remaining == 0:
+                break
             tweet = event.get('direct_message') or event
             text = tweet.get('text', '')
             user = re.search(r'use @([a-z0-9_]{1,15})', text, flags=re.I)
@@ -135,12 +137,12 @@ class TwitterHandler(object):
                     print('skipping user @%s' % user)
                     continue
                 else:
-                    self.seen_users.add(user)
-                    print(text)
-                    print("using @%s" % user)
                     try:
                         tweets = self.fetch_posts(user)
                         usertweets.append((user, tweets))
+                        self.seen_users.add(user)
+                        print(text)
+                        print("using @%s" % user)
                     except TwitterHTTPError as err:
                         if err.e.code == 420:
                             print('~~~~ ERROR 420 ~~~~')

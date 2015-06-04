@@ -2,23 +2,23 @@
  * Wrapper
  */
 .wrapper {
-  max-width: -webkit-calc(90% - (30px * 2));
-  max-width: calc(90% - (30px * 2));
+  max-width: -webkit-calc(95% - (30px * 2));
+  max-width: calc(95% - (30px * 2));
   margin-right: auto;
   margin-left: auto;
   padding-right: 30px;
   padding-left: 30px; }
   @media screen and (max-width: 800px) {
     .wrapper {
-      max-width: -webkit-calc(90% - (30px));
-      max-width: calc(90% - (30px));
+      max-width: -webkit-calc(95% - (30px));
+      max-width: calc(95% - (30px));
       padding-right: 15px;
       padding-left: 15px; } }
 
 /**
  * Clearfix
  */
-.wrapper:after {
+.wrapper:after, header:after {
   content: "";
   display: table;
   clear: both; }
@@ -27,10 +27,16 @@ body {
   font-family: "HelveticaNeueThin", "HelveticaNeue-Thin", "Helvetica Neue Thin", "HelveticaNeue", "Helvetica Neue", serif;
   font-size: 16px;
   line-height: 1.5;
-  font-weight: 100;
+  font-weight: 200;
   color: #111;
   background-color: #fff;
   -webkit-text-size-adjust: 100%; }
+
+.drop-shadow, .poem, .active-users {
+  background-color: rgba(255, 255, 255, 0.7);
+  -webkit-box-shadow: -2px 0px 5px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: -2px 0px 5px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: -2px 0px 5px 0px rgba(0, 0, 0, 0.4); }
 
 #recent-tweets {
   position: absolute;
@@ -43,12 +49,30 @@ body {
     margin: 0;
     padding: 0; }
 
-#tweets-seen {
-  margin-left: 20px;
-  font-weight: 300;
-  font-size: 16px; }
-  #tweets-seen span {
-    font-weight: 400; }
+header {
+  display: block;
+  background-color: rgba(255, 255, 255, 0.9);
+  width: 100%;
+  min-height: 50px;
+  margin: -8px -8px 10px;
+  padding: 24px 10px 10px;
+  float: left; }
+  header h2 {
+    display: inline;
+    margin: 0;
+    padding: 0; }
+  header #tweets-seen {
+    margin-left: 20px;
+    font-weight: 300;
+    font-size: 16px; }
+    header #tweets-seen span {
+      font-weight: 500; }
+  header .explain {
+    position: absolute;
+    top: 32px;
+    right: 10px;
+    font-weight: 500;
+    color: #ccc; }
 
 .poem-container {
   font-family: "Vollkorn", serif; }
@@ -62,9 +86,9 @@ body {
   margin-left: -20px; }
 
 .poem {
-  margin-bottom: 60px;
-  margin-left: 30px;
-  width: auto;
+  display: inline-block;
+  padding: 15px;
+  margin: 15px;
   font-size: 28.8px; }
   .poem h3 {
     font-style: italic;
@@ -83,13 +107,11 @@ body {
 
 .active-users {
   position: absolute;
-  background-color: #fff;
   right: 0px;
-  -webkit-box-shadow: -2px 0px 5px 0px rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: -2px 0px 5px 0px rgba(0, 0, 0, 0.4);
-  box-shadow: -2px 0px 5px 0px rgba(0, 0, 0, 0.4);
   font-weight: 400;
-  padding: 5px; }
+  padding: 5px;
+  margin-top: 15px;
+  min-width: 200px; }
   .active-users div {
     padding: 5px 0px; }
   .active-users .active-user {

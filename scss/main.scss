@@ -3,7 +3,7 @@
 // $base-font-family: Futura, serif;
 // $base-font-family: "HelveticaNeueLight", "HelveticaNeue-Light", "Helvetica Neue Light", "HelveticaNeue", "Helvetica Neue", 'TeXGyreHerosRegular', "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif; 
 $base-font-family: "HelveticaNeueThin", "HelveticaNeue-Thin", "Helvetica Neue Thin", "HelveticaNeue", "Helvetica Neue", serif;
-$base-font-weight: 100; 
+$base-font-weight: 200; 
 	// font-weight:300; 
 	// font-stretch:normal;
 // $poem-font-family: "Times New Roman", Times, Georgia, serif;
@@ -24,7 +24,7 @@ $grey-color-light: lighten($grey-color, 40%);
 $grey-color-dark:  darken($grey-color, 25%);
 
 // Width of the content area
-$content-width:    90%;
+$content-width:    95%;
 
 $on-palm:          600px;
 $on-laptop:        800px;

@@ -8,6 +8,13 @@ body {
     -webkit-text-size-adjust: 100%;
 }
 
+.drop-shadow {
+	background-color: rgba(255,255,255,0.7);
+	-webkit-box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);
+	-moz-box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);
+	box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);	
+}
+
 #recent-tweets {
 	position: absolute;
 	z-index: -1;
@@ -22,15 +29,40 @@ body {
 	}
 }
 
-#tweets-seen {
-	margin-left: 20px;
-	font-weight: 300;
-	font-size: $base-font-size;
-
-	span {
-		font-weight: 400;
+header {
+	@extend %clearfix;
+	display: block;
+	background-color: rgba(255,255,255,0.9);
+	width: 100%;
+	min-height: 50px;
+	margin: -8px -8px 10px;
+	padding: 24px 10px 10px;
+	float: left;
+	h2 {
+		display: inline;
+		margin:0;
+		padding:0;
 	}
+
+	#tweets-seen {
+		margin-left: 20px;
+		font-weight: 300;
+		font-size: $base-font-size;
+
+		span {
+			font-weight: 500;
+		}
+	}
+	.explain {
+		position: absolute;
+		top: 32px;
+		right: 10px;
+		font-weight: 500;
+		color: #ccc;
+	}
+
 }
+
 .poem-container {
 	font-family: $poem-font-family;
 	// font-family: Courier, mono;
@@ -50,10 +82,12 @@ body {
 
 
 .poem {
-	margin-bottom: 60px;
-	margin-left: 30px;
-	width: auto;
+	@extend .drop-shadow;
+	display: inline-block;
+	padding: 15px;
+	margin: 15px;
 	font-size: $base-font-size * 1.8;
+
 	&:not(:last-of-type) {
 		// border-bottom: 1px solid #ccc;
 	}
@@ -81,14 +115,14 @@ body {
 }
 
 .active-users {
+	@extend .drop-shadow;
+
 	position: absolute;
-	background-color: #fff;
 	right: 0px;
-	-webkit-box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);
-	-moz-box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);
-	box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);
 	font-weight: 400;	
-		padding: 5px;
+	padding: 5px;
+	margin-top: 15px;
+	min-width: 200px;
 	
 	div {
 		padding: 5px 0px;
