@@ -85,8 +85,6 @@ def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None):
             yield StreamResult(StreamResultItem, {'poem': poem.to_dict()})
 
         # handle user mentions:
-        # if (twitter.rate_limit_remaining > 0 or
-        #         twitter.rate_limit_reset < int(time.time())):
         usertweets = twitter.userstweets
         if usertweets:
             print('found user')
@@ -103,14 +101,10 @@ def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None):
                     t['special_user'] = user
                 itercombiner.add_items(filtered_tweets)
         else:
-            twitter.process_user_events()
-        # else:
-        #     print("at rate limit?")
-        #     print(twitter.rate_limit_remaining)
-        #     print("seconds remainging: %d" %
-        #           twitter.rate_limit_reset - int(time.time()))
-        #     yield StreamResult(StreamResultItem,
-        #                        {'rate-limit': {'reset': twitter.rate_limit_reset}})
+            rate_limit = twitter.process_user_events()
+            if rate_limit:
+                yield StreamResult(StreamResultItem, {'rate-limit': {'wait_time': rate_limit}})
+        
 
 
 def main():
@@ -130,7 +124,7 @@ def main():
 
     creds = twittertools.load_auth(args.auth, raw=True)
     # the OAuth object in the twitter module has different positional arguments
-    # then the requests OAuth module used in my own streaming implementation
+# then the requests OAuth module used in my own streaming implementation
     auth = OAuth(creds[2], creds[3], creds[0], creds[1])
 
     iterator = functools.partial(line_iter, auth, source_host, source_port)

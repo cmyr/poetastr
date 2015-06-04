@@ -78,6 +78,9 @@ poet = {
                         this.showNewActiveUser(msg.body);
                         console.log(msg.body.screen_name);
                         break;
+                    case "rate-limit":
+                    console.log('rate limited');
+                    console.log(msg.body.wait_time);
                 }
             },
 

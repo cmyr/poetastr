@@ -111,7 +111,12 @@ class TwitterHandler(object):
         return pruned
 
     def process_user_events(self):
-        """ handle mentions etc """
+        """
+        handle mentions etc. if we're rate limited, return the time
+        until the rate limit resets. (this is not code i'm proud of)
+         """
+        if self.chill_until >= time.time():
+            return self.chill_until - time.time()
         if not self.thread or not self.thread.isAlive():
             self.thread = threading.Thread(target=self._process_events)
             self.thread.start()
@@ -119,8 +124,6 @@ class TwitterHandler(object):
 
     def _process_events(self):
         usertweets = list()
-        if self.chill_until >= time.time():
-            return
 
         for event in self.new_user_events():
             tweet = event.get('direct_message') or event
