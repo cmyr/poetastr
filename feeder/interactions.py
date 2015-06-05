@@ -130,7 +130,7 @@ class TwitterHandler(object):
                 break
             tweet = event.get('direct_message') or event
             text = tweet.get('text', '')
-            user = re.search(r'use @([a-z0-9_]{1,15})', text, flags=re.I)
+            user = re.search(r'user? @([a-z0-9_]{1,15})', text, flags=re.I)
             if user:
                 user = user.group(1)
                 if user in self.seen_users:

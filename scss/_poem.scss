@@ -38,6 +38,7 @@ header {
 	margin: -8px -8px 10px;
 	padding: 24px 10px 10px;
 	float: left;
+	
 	h2 {
 		display: inline;
 		margin:0;
@@ -82,7 +83,7 @@ header {
 
 
 .poem {
-	@extend .drop-shadow;
+	// @extend .drop-shadow;
 	display: inline-block;
 	padding: 15px;
 	margin: 15px;
@@ -116,13 +117,13 @@ header {
 
 .active-users {
 	@extend .drop-shadow;
-
+	z-index: 3;
 	position: absolute;
 	right: 0px;
 	font-weight: 400;	
 	padding: 5px;
 	margin-top: 15px;
-	min-width: 200px;
+	min-width: 150px;
 	
 	div {
 		padding: 5px 0px;
