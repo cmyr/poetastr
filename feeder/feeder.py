@@ -15,6 +15,7 @@ import twittertools
 import poetryutils2 as poetry
 import interactions
 from itercombiner import IterCombiner
+from saver import save_poem
 
 """ cleans up stream results and rebroadcasts them """
 
@@ -80,8 +81,10 @@ def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None):
 
         if isinstance(poem, list):
             for p in poem:
+                save_poem(p)
                 yield StreamResult(StreamResultItem, {'poem': p.to_dict()})
         elif isinstance(poem, poetry.sorting.Poem):
+            save_poem(poem)
             yield StreamResult(StreamResultItem, {'poem': poem.to_dict()})
 
         # handle user mentions:
