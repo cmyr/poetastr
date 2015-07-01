@@ -90,7 +90,10 @@ class TwitterHandler(object):
         """fetch new items in the user stream"""
         events = list()
         while True:
-            event = self.stream.next()
+            try:
+                event = self.stream.next()
+            except StopIteration:
+                break
             if event != None:
                 # print(event)
                 events.append(event)
