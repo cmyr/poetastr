@@ -32,7 +32,7 @@ body {
 header {
 	@extend %clearfix;
 	display: block;
-	background-color: rgba(255,255,255,0.9);
+	// background-color: rgba(255,255,255,0.9);
 	width: 100%;
 	min-height: 50px;
 	margin: -8px -8px 10px;
@@ -54,24 +54,34 @@ header {
 			font-weight: 500;
 		}
 	}
-	.explain {
+	.lang-select {
 		position: absolute;
-		top: 32px;
-		right: 10px;
-		font-weight: 500;
+		top: 0px;
+		right: 40px;
 		color: #ccc;
+		font-size: 36pt;
+
+		a {
+			text-decoration: none;
+			color: black;
+			font-weight: normal;
+			padding: .2em;
+		}
+
+		.active {
+			font-weight: bold;
+		}
 	}
 
 }
 
 .poem-container {
 	font-family: $poem-font-family;
-	// font-family: Courier, mono;
+	text-align: center;
 
 	a {
 		text-decoration: none;
 		color: #000;
-		// font-size: $base-font-size * 1.5;
 	}
 }
 
@@ -81,17 +91,18 @@ header {
 	margin-left: -20px;
 }
 
+	.poem-frame {
+		display: block;
+		clear: both;
+	}
 
 .poem {
-	// @extend .drop-shadow;
 	display: inline-block;
 	padding: 15px;
 	margin: 15px;
-	font-size: $base-font-size * 1.8;
-
-	&:not(:last-of-type) {
-		// border-bottom: 1px solid #ccc;
-	}
+	font-size: $base-font-size * 2.5;
+	text-align: left;
+	min-width: 50%;
 
 	h3 {
 		font-style: italic;
@@ -144,19 +155,3 @@ header {
 	float: right;
 	margin-top: 500px;
 }
-
-
-#left {
-	// background-color: #ccc;
-	display: block;
-	width: 40%;
-	float: left;
-}
-
-#right {
-	display: block;
-	// background-color: #FF0;
-	width: 60%;
-	float: right;
-}
-

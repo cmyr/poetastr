@@ -51,7 +51,6 @@ body {
 
 header {
   display: block;
-  background-color: rgba(255, 255, 255, 0.9);
   width: 100%;
   min-height: 50px;
   margin: -8px -8px 10px;
@@ -67,15 +66,23 @@ header {
     font-size: 14px; }
     header #tweets-seen span {
       font-weight: 500; }
-  header .explain {
+  header .lang-select {
     position: absolute;
-    top: 32px;
-    right: 10px;
-    font-weight: 500;
-    color: #ccc; }
+    top: 0px;
+    right: 40px;
+    color: #ccc;
+    font-size: 36pt; }
+    header .lang-select a {
+      text-decoration: none;
+      color: black;
+      font-weight: normal;
+      padding: .2em; }
+    header .lang-select .active {
+      font-weight: bold; }
 
 .poem-container {
-  font-family: "Vollkorn", serif; }
+  font-family: "Vollkorn", serif;
+  text-align: center; }
   .poem-container a {
     text-decoration: none;
     color: #000; }
@@ -85,11 +92,17 @@ header {
   margin-top: 60px;
   margin-left: -20px; }
 
+.poem-frame {
+  display: block;
+  clear: both; }
+
 .poem {
   display: inline-block;
   padding: 15px;
   margin: 15px;
-  font-size: 25.2px; }
+  font-size: 35px;
+  text-align: left;
+  min-width: 50%; }
   .poem h3 {
     font-style: italic;
     font-size: 25.2px;
@@ -123,15 +136,5 @@ header {
   background-color: #fdd;
   float: right;
   margin-top: 500px; }
-
-#left {
-  display: block;
-  width: 40%;
-  float: left; }
-
-#right {
-  display: block;
-  width: 60%;
-  float: right; }
 
 /*# sourceMappingURL=main.css.map */

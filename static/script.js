@@ -57,7 +57,7 @@ poet = {
                         }).reduce(function(a, b) {
                             return a + b;
                         });
-                return '<div class="poem">'+title+lines+'</div>';
+                return '<div class="poem-frame"><div class="poem">'+title+lines+'</div></div>';
             },
 
             handleMessage: function (msg) {
@@ -79,35 +79,39 @@ poet = {
                         console.log(msg.body.screen_name);
                         break;
                     case "rate-limit":
-                    console.log('rate limited');
-                    console.log(msg.body.wait_time);
+                        console.log('rate limited');
+                        console.log(msg.body.wait_time);
+                        break;
+                    default:
+                    console.log(msg.type)
                 }
             },
 
             displayPoem: function (poem) {
                 var formattedPoem = poet.formatPoem(poem);
-                switch (poem.poem_type) {
-                    case "haiku":
-                        $(formattedPoem).hide()
-                        .prependTo('#left')
-                        .slideDown('slow');
+                poet.removeBonusPoems();
+                $(formattedPoem).hide()
+                .prependTo('#main-container')
+                .slideDown('1000', function() {
+                if ($('#main-container').children().length > 1) {
+                    $('#main-container div.poem:last').fadeOut('1000', function() {
+                        this.remove();
+                    });   
+                }});
+            },
 
-                        if ($('#left').children().length > 5) {
-                            $('#left div.poem:last').fadeOut('slow')
-                            .remove();
-                        }
-                        break;
+            removeBonusPoems: function() {
+                // if we receive items too quickly we can miss removals and then they pile up
+                var container = document.getElementById("main-container");
+                while (container.children.length > 2 ) {
+                    container.removeChild(container.lastChild);
+               }
 
-                    case "limerick":
-                        $(formattedPoem).hide()
-                        .prependTo('#right')
-                        .slideDown('slow');
-
-                        if ($('#right').children().length > 3) {
-                            $('#right div.poem:last').fadeOut('slow')
-                            .remove();
-                        }
-                        break;
+                if ($('#main-container').children().length > 1) {
+                     $('#main-container div.poem:last').fadeOut('slow', function() {
+                        console.log('removing')
+                        this.remove();
+                    });
                 }
             },
 

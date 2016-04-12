@@ -30,7 +30,6 @@
                     function() {
                         sse = new EventSource('/my_event_source');
                         sse.onmessage = function(message) {
-                            // console.log(message)
                             try {
                                 var msg = jQuery.parseJSON(message.data);
                                 poet.handleMessage(msg);
@@ -49,18 +48,15 @@
     <header>
         <h2>poetastr</h2>
         <span id="tweets-seen">Tweets seen: <span class="nodometer">0</span></span>
-        <div class="explain">tweet "use @twitter_name" to @pypoet to add a user's tweets</div>
+        <div class="lang-select"><a href="#" class="">FR</a>/<a href="#" class="active">EN</a></div>
     </header>
         <div id="recent-tweets">
         </div>
-        <!-- <div class="wrapper">
-        </div> -->
         <div class="active-users">
             <div class="active-users-label">tracking users:</div>
         </div>
         <div class="wrapper">
-            <div class="poem-container" id="left"></div>
-            <div class="poem-container" id="right"></div>
+            <div class="poem-container" id="main-container"></div>
         </div>
     </body>
 
