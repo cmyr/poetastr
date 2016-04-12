@@ -115,40 +115,29 @@ poet = {
             },
 
             displayPoem: function (poem) {
-                console.log(poem);
                 if (poet.showLangs[poem.lang]) {
+                    // if we receive items too quickly we can miss removals and then they pile up
+                    var container = document.getElementById("main-container");
+                    while (container.children.length > 1 ) {
+                        container.removeChild(container.lastChild);
+                        console.log('removed extra child', container.children.length)
+                   }
+
                     var formattedPoem = poet.formatPoem(poem);
-                    poet.removeBonusPoems();
                     $(formattedPoem).hide()
                     .prependTo('#main-container')
-                    .slideDown('1000')
+                    .slideDown('slow')
                     .promise().always( function() {
                         if ($('#main-container').children().length > 1) {
-                            $('#main-container div.poem:last').fadeOut('5000')
+                            $('#main-container div.poem:last').fadeOut('slow')
                             .promise().always( function() {
-                                this.remove();
+                                $(this).remove();
                             });
                         }
                     });
-                } else {
-                    console.log('lang skipping: ' + poem);
                 }
             },
 
-            removeBonusPoems: function() {
-                // if we receive items too quickly we can miss removals and then they pile up
-                var container = document.getElementById("main-container");
-                while (container.children.length > 2 ) {
-                    container.removeChild(container.lastChild);
-               }
-
-                if ($('#main-container').children().length > 1) {
-                     $('#main-container div.poem:last').fadeOut('slow', function() {
-                        console.log('removing')
-                        this.remove();
-                    });
-                }
-            },
 
             activeUsers: {
             	_userCount: 0,
