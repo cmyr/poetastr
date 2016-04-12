@@ -2,6 +2,16 @@ poet = {
             _window: null,
             windowLoaded: function (wndw) {
                 this._window = wndw;
+                $('#sole-poem-container').click( function(event) {
+                            poet.shouldDisplay = false;
+                            $('#sole-poem-container').stop()
+                            .fadeIn('fast');
+                            poet._window.setTimeout(function() {
+                                poet.shouldDisplay = true;
+                                
+                            },
+                            5000)
+                        });
             },
 
 			linesSeen: 0,
@@ -20,7 +30,6 @@ poet = {
 
 				sawPoemOfType: function ( poemType ) {
 					poet.poemsSeen++;
-                    console.log(poet.poemsSeen);
 					if (typeof(this._counts[poemType]) == "undefined") {
 						this._counts[poemType] = 1;
 					} else {
@@ -103,7 +112,7 @@ poet = {
                         // this.recentTweets.add(msg.body);
                         break;
                     case "user-line":
-                        this.recentLines.add(msg.body.text);
+                        // this.recentLines.add(msg.body.text);
                         // this.activeUsers.sawLineForUser(msg.body.special_user);
                         break;
                     case "poem":
@@ -129,9 +138,10 @@ poet = {
                 'fr': null
             },
 
+            shouldDisplay: true,
             displayPoem: function (poem) {
                 this.recentPoems[poem.lang] = poem;
-                if (poet.showLangs[poem.lang]) {
+                if (this.showLangs[poem.lang] && this.shouldDisplay) {
                     // if we receive items too quickly we can miss removals and then they pile up
                     var container = document.getElementById("main-container");
                     while (container.children.length > 1 ) {
@@ -141,7 +151,8 @@ poet = {
 
                     var formattedPoem = poet.formatPoem(poem);
                     $('#sole-poem-container').fadeOut(4000, function() {
-                        $(this).html(formattedPoem)
+                        $(this).hide()
+                        .html(formattedPoem)
                         .fadeIn(1000)
                     });
                 }
