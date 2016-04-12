@@ -22,6 +22,33 @@ poet = {
 					}
 				}
 			},
+            
+            showLangs: {
+                'en': true,
+                'fr': true
+            },
+
+            langSelect: function ( lang ) {
+                var elementID = (lang == 'en') ? '#lang-en' : '#lang-fr';
+                var toggle = false;
+                
+                poet.showLangs[lang] = !poet.showLangs[lang];
+
+                if (!poet.showLangs['en'] && !poet.showLangs['fr']) {
+                    toggle = true;
+                }
+
+                if (poet.showLangs[lang] == true) {
+                    $(elementID).addClass('active');
+                } else {
+                    $(elementID).removeClass('active');
+                }
+
+                if (toggle) {
+                    var otherLang = (lang == 'en') ? 'fr' : 'en';
+                    poet.langSelect(otherLang)                    
+                }
+            },
 
             recentLines: {
                 maxLength: 15,
@@ -88,16 +115,24 @@ poet = {
             },
 
             displayPoem: function (poem) {
-                var formattedPoem = poet.formatPoem(poem);
-                poet.removeBonusPoems();
-                $(formattedPoem).hide()
-                .prependTo('#main-container')
-                .slideDown('1000', function() {
-                if ($('#main-container').children().length > 1) {
-                    $('#main-container div.poem:last').fadeOut('1000', function() {
-                        this.remove();
-                    });   
-                }});
+                console.log(poem);
+                if (poet.showLangs[poem.lang]) {
+                    var formattedPoem = poet.formatPoem(poem);
+                    poet.removeBonusPoems();
+                    $(formattedPoem).hide()
+                    .prependTo('#main-container')
+                    .slideDown('1000')
+                    .promise().always( function() {
+                        if ($('#main-container').children().length > 1) {
+                            $('#main-container div.poem:last').fadeOut('5000')
+                            .promise().always( function() {
+                                this.remove();
+                            });
+                        }
+                    });
+                } else {
+                    console.log('lang skipping: ' + poem);
+                }
             },
 
             removeBonusPoems: function() {

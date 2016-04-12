@@ -66,18 +66,18 @@ header {
     font-size: 14px; }
     header #tweets-seen span {
       font-weight: 500; }
-  header .lang-select {
+  header #lang-select {
     position: absolute;
     top: 0px;
     right: 40px;
     color: #ccc;
     font-size: 36pt; }
-    header .lang-select a {
+    header #lang-select a {
       text-decoration: none;
       color: black;
       font-weight: normal;
       padding: .2em; }
-    header .lang-select .active {
+    header #lang-select .active {
       font-weight: bold; }
 
 .poem-container {
