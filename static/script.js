@@ -1,4 +1,9 @@
-poet = {
+poet = {    
+            _window: null,
+            windowLoaded: function (wndw) {
+                this._window = wndw;
+            },
+
 			linesSeen: 0,
 			poemsSeen: 0,
             // activeUsers: 0,
@@ -15,6 +20,7 @@ poet = {
 
 				sawPoemOfType: function ( poemType ) {
 					poet.poemsSeen++;
+                    console.log(poet.poemsSeen);
 					if (typeof(this._counts[poemType]) == "undefined") {
 						this._counts[poemType] = 1;
 					} else {
@@ -40,6 +46,9 @@ poet = {
 
                 if (poet.showLangs[lang] == true) {
                     $(elementID).addClass('active');
+                    if (this.recentPoems[lang] !== null) {
+                        this.displayPoem(this.recentPoems[lang]);
+                    }
                 } else {
                     $(elementID).removeClass('active');
                 }
@@ -48,22 +57,23 @@ poet = {
                     var otherLang = (lang == 'en') ? 'fr' : 'en';
                     poet.langSelect(otherLang)                    
                 }
+
             },
 
-            recentLines: {
-                maxLength: 15,
-                add: function (item) {
-                	poet.linesSeen++;
-                	$('#tweets-seen span').html(poet.linesSeen);
-                    $('<p>'+item+'</p>').hide()
-                    .prependTo('#recent-tweets')
-                    .slideDown('fast');
-                        if ($('#recent-tweets').children().length > this.maxLength) {
-                            $('#recent-tweets p:last').slideDown('fast')
-                            .remove();
-                        }
-                }
-            },
+            // recentLines: {
+            //     maxLength: 15,
+            //     add: function (item) {
+            //     	poet.linesSeen++;
+            //     	$('#tweets-seen span').html(poet.linesSeen);
+            //         $('<p>'+item+'</p>').hide()
+            //         .prependTo('#recent-tweets')
+            //         .slideDown('fast');
+            //             if ($('#recent-tweets').children().length > this.maxLength) {
+            //                 $('#recent-tweets p:last').slideDown('fast')
+            //                 .remove();
+            //             }
+            //     }
+            // },
 
             formatLine: function (line) {
                 var classes = 'poem-line';
@@ -90,7 +100,7 @@ poet = {
             handleMessage: function (msg) {
                 switch (msg.mtype) {
                     case "line":
-                        this.recentLines.add(msg.body);
+                        // this.recentTweets.add(msg.body);
                         break;
                     case "user-line":
                         this.recentLines.add(msg.body.text);
@@ -114,7 +124,13 @@ poet = {
                 }
             },
 
+            recentPoems: {
+                'en': null,
+                'fr': null
+            },
+
             displayPoem: function (poem) {
+                this.recentPoems[poem.lang] = poem;
                 if (poet.showLangs[poem.lang]) {
                     // if we receive items too quickly we can miss removals and then they pile up
                     var container = document.getElementById("main-container");
@@ -124,16 +140,9 @@ poet = {
                    }
 
                     var formattedPoem = poet.formatPoem(poem);
-                    $(formattedPoem).hide()
-                    .prependTo('#main-container')
-                    .slideDown('slow')
-                    .promise().always( function() {
-                        if ($('#main-container').children().length > 1) {
-                            $('#main-container div.poem:last').fadeOut('slow')
-                            .promise().always( function() {
-                                $(this).remove();
-                            });
-                        }
+                    $('#sole-poem-container').fadeOut(4000, function() {
+                        $(this).html(formattedPoem)
+                        .fadeIn(1000)
                     });
                 }
             },
@@ -173,3 +182,28 @@ poet = {
             	});
             }
         };
+
+            // recentTweets: {
+            //     maxLength: 20,
+            //     add: function(item) {
+            //         poet.linesSeen++;
+            //         var newTweet = $('<div class="twitter-embed" id="'+item.id_str+'"></div>').hide()
+            //         .prependTo('#recent-tweets')
+            //         poet._window.twttr.widgets.createTweet(
+            //             item.id_str,
+            //             document.getElementById(item.id_str),
+            //             {
+            //                 cards: 'hidden',
+            //                 dnt: true,
+            //                 width: poet._tweetWidth,
+            //                 omit_script: true
+            //             }).then( function (elem) {
+            //                 newTweet.slideDown('fast');
+            //             });
+
+            //         if ($('#recent-tweets').children().length > this.maxLength) {
+            //             $('#recent-tweets div:last').slideDown('fast')
+            //             .remove();
+            //         }
+            //     }
+            // },
