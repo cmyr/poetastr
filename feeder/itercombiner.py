@@ -5,9 +5,10 @@ from __future__ import unicode_literals
 import random
 from collections import deque
 
+
 class IterCombiner(object):
     """
-    takes a base iterator and allows other items to be mixed in 
+    takes a base iterator and allows other items to be mixed in
     with its results. Mixin is random, with the ratio of other items
     determined by the `ratio` argument.
     """
@@ -29,7 +30,7 @@ class IterCombiner(object):
             try:
                 item = self._other_items.popleft()
                 return item
-            except IndexError as err:
+            except IndexError:
                 self.use_other = False
         return self.base_iter.next()
 
@@ -48,7 +49,6 @@ def main():
         print(i)
         if i == 10:
             combiner.add_items(mixin)
-
 
 
 if __name__ == "__main__":

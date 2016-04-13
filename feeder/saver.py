@@ -33,7 +33,6 @@ def write_json_to_gzip(outfile, pyobj):
         writefile.write(json.dumps(pyobj))
 
 
-
 def tests():
     lines = [poetry.sorting.NormalizedLine(l, 'info') for l in
              ['line one', 'line two', 'line three']]
@@ -44,11 +43,6 @@ def tests():
 
 def main():
     pass
-    # import argparse
-    # parser = argparse.ArgumentParser(description="Does something.")
-    # parser.add_argument('arg1', type=str, help="required argument")
-    # parser.add_argument('arg2', '--argument-2', help='optional boolean argument', action="store_true")
-    # args = parser.parse_args()
 
 
 if __name__ == "__main__":
