@@ -43,6 +43,12 @@ header {
 		display: inline;
 		margin:0;
 		padding:0;
+		vertical-align: top;
+	}
+
+	#twitter-bird-svg {
+		display: inline-block;
+		padding: 10px;
 	}
 
 	#tweets-seen {
@@ -57,10 +63,10 @@ header {
 
 	#lang-select {
 		position: absolute;
-		top: 0px;
+		top: 16px;
 		right: 40px;
 		color: #ccc;
-		font-size: 36pt;
+		font-size: 32pt;
 
 		a {
 			text-decoration: none;

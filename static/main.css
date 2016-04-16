@@ -59,7 +59,11 @@ header {
   header h2 {
     display: inline;
     margin: 0;
-    padding: 0; }
+    padding: 0;
+    vertical-align: top; }
+  header #twitter-bird-svg {
+    display: inline-block;
+    padding: 10px; }
   header #tweets-seen {
     margin-left: 20px;
     font-weight: 300;
@@ -68,10 +72,10 @@ header {
       font-weight: 500; }
   header #lang-select {
     position: absolute;
-    top: 0px;
+    top: 16px;
     right: 40px;
     color: #ccc;
-    font-size: 36pt; }
+    font-size: 32pt; }
     header #lang-select a {
       text-decoration: none;
       color: black;
