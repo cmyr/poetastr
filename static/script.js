@@ -2,16 +2,17 @@ poet = {
             _window: null,
             windowLoaded: function (wndw) {
                 this._window = wndw;
-                $('#sole-poem-container').click( function(event) {
-                            poet.shouldDisplay = false;
-                            $('#sole-poem-container').stop()
-                            .fadeIn('fast');
-                            poet._window.setTimeout(function() {
-                                poet.shouldDisplay = true;
+                // $('#sole-poem-container')
+            //     .click( function(event) {
+            //                 poet.shouldDisplay = false;
+            //                 $('#sole-poem-container').stop()
+            //                 .fadeIn('fast');
+            //                 poet._window.setTimeout(function() {
+            //                     poet.shouldDisplay = true;
                                 
-                            },
-                            5000)
-                        });
+            //                 },
+            //                 5000)
+            //             });
             },
 
 			linesSeen: 0,
@@ -77,7 +78,7 @@ poet = {
                     username = '— @'+line.info.special_user;
                 }
                 return '<div class="'+classes+'">'+
-                '<a class="line-link" link="'+line.info.id_str+'" href="#">'+line.info.text+
+                '<a class="line-link" link="'+line.info.id_str+'" href="#" onclick="javascript:tweetClicked(\''+line.info.id_str+'\')">'+line.info.text+
                 '</a>'+'<span class="user-name">'+username+'</span>'+'</div>';
             },
 
@@ -205,31 +206,36 @@ poet = {
             		poet.activeUsers.decrement();
             	});
             }
+    };
+
+tweetDisplay = {
+    add: function(tweet_id) {
+
     }
+}
 
+tweetClicked = function(tweet_id) {
+    var container = document.getElementById('embedded-tweets');
+    var newNode = document.createElement('div');
+    newNode.id = tweet_id;
+    newNode.className = 'twitter-embed';
+    container.insertBefore(newNode, container.firstChild);
 
+    
+    poet._window.twttr.widgets.createTweet(
+        tweet_id,
+        newNode,
 
-            // recentTweets: {
-            //     maxLength: 20,
-            //     add: function(item) {
-            //         poet.linesSeen++;
-            //         var newTweet = $('<div class="twitter-embed" id="'+item.id_str+'"></div>').hide()
-            //         .prependTo('#recent-tweets')
-            //         poet._window.twttr.widgets.createTweet(
-            //             item.id_str,
-            //             document.getElementById(item.id_str),
-            //             {
-            //                 cards: 'hidden',
-            //                 dnt: true,
-            //                 width: poet._tweetWidth,
-            //                 omit_script: true
-            //             }).then( function (elem) {
-            //                 newTweet.slideDown('fast');
-            //             });
-
-            //         if ($('#recent-tweets').children().length > this.maxLength) {
-            //             $('#recent-tweets div:last').slideDown('fast')
-            //             .remove();
-            //         }
-            //     }
-            // },
+        {
+            cards: 'hidden',
+            dnt: true,
+            // width: 300,
+            omit_script: true
+        }).then( function(el) {
+            $(newNode).animate({ opacity: 1.0 }, 'slow')
+            .delay(7000)
+            .slideToggle('slow', function() {
+                $(this).remove();
+            })
+         });
+}

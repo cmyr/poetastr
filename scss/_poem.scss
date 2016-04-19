@@ -15,24 +15,10 @@ body {
 	box-shadow: -2px 0px 5px 0px rgba(0,0,0,0.4);	
 }
 
-#recent-tweets {
-	position: absolute;
-	z-index: -1;
-	font-size: $base-font-size * 4;
-	font-weight: 200;
-	line-height: 1;
-	color: #eee;
-
-	p {
-		margin: 0;
-		padding: 0;
-	}
-}
 
 header {
 	@extend %clearfix;
 	display: block;
-	// background-color: rgba(255,255,255,0.9);
 	width: 100%;
 	min-height: 50px;
 	margin: -8px -8px 10px;
@@ -131,6 +117,28 @@ header {
 			vertical-align: middle;
 		}
 	}	
+}
+
+#embedded-tweets {
+	position: absolute;
+	bottom: 0;
+	right: 10px;
+	z-index: -1;
+
+	.twitter-embed {
+		opacity: 0.0;
+		width: 300px;
+	}
+}
+
+#embeded-tweet-click-blocker {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: block;
+	width: 400px;
+	height: 100%;
+	z-index: 999;
 }
 
 .active-users {
