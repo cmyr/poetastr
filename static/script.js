@@ -69,21 +69,6 @@ poet = {
 
             },
 
-            // recentLines: {
-            //     maxLength: 15,
-            //     add: function (item) {
-            //     	poet.linesSeen++;
-            //     	$('#tweets-seen span').html(poet.linesSeen);
-            //         $('<p>'+item+'</p>').hide()
-            //         .prependTo('#recent-tweets')
-            //         .slideDown('fast');
-            //             if ($('#recent-tweets').children().length > this.maxLength) {
-            //                 $('#recent-tweets p:last').slideDown('fast')
-            //                 .remove();
-            //             }
-            //     }
-            // },
-
             formatLine: function (line) {
                 var classes = 'poem-line';
                 var username = "";
@@ -117,7 +102,7 @@ poet = {
                         break;
                     case "poem":
                     	this.poemSeenCounts.sawPoemOfType(msg.body.poem_type);
-                        this.displayPoem(msg.body);
+                        this.addPoem(msg.body);
                         break;
                     case "track-user":
                         // this.activeUsers.addUser(msg.body);
@@ -137,24 +122,52 @@ poet = {
                 'en': null,
                 'fr': null
             },
-
-            shouldDisplay: true,
+            
+            waitingForPoem: true,
+            poemQueue: Array(),
+            addPoem: function (poem) {
+                console.log('added poem')
+                if (this.waitingForPoem && this.showLangs[poem.lang]) {
+                    this.displayPoem(poem);
+                } else {
+                    this.poemQueue.push(poem);   
+                    console.log('enqued poem, total poems = '+this.poemQueue.length);
+                }
+            },
+            
             displayPoem: function (poem) {
+                this.waitingForPoem = false;
                 this.recentPoems[poem.lang] = poem;
-                if (this.showLangs[poem.lang] && this.shouldDisplay) {
-                    // if we receive items too quickly we can miss removals and then they pile up
-                    var container = document.getElementById("main-container");
-                    while (container.children.length > 1 ) {
-                        container.removeChild(container.lastChild);
-                        console.log('removed extra child', container.children.length)
-                   }
+                var container = document.getElementById("main-container");
 
-                    var formattedPoem = poet.formatPoem(poem);
-                    $('#sole-poem-container').fadeOut(4000, function() {
-                        $(this).hide()
-                        .html(formattedPoem)
-                        .fadeIn(1000)
+                var formattedPoem = poet.formatPoem(poem);
+                $('#sole-poem-container').fadeOut(4000, function() {
+                    $(this).html('')
+                    .hide()
+                    .html(formattedPoem)
+                    .fadeIn(1000, function() {
+                        console.log('set timeout');
+                        setTimeout(function() {
+                            console.log('timeout finished');
+                            poet.displayFinished();
+                        },
+                        8000)
                     });
+                });
+            },
+
+            displayFinished: function() {
+                var next = this.poemQueue.find(function(poem) {
+                    return this.showLangs[poem.lang]
+                },
+                poet)
+
+                if (next) {
+                    this.poemQueue.splice(this.poemQueue.indexOf(next), 1);
+                    this.displayPoem(next);
+                } else {
+                    this.waitingForPoem = true;
+                    console.log('waiting for poem')
                 }
             },
 
@@ -192,7 +205,9 @@ poet = {
             		poet.activeUsers.decrement();
             	});
             }
-        };
+    }
+
+
 
             // recentTweets: {
             //     maxLength: 20,
