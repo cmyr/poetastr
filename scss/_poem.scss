@@ -37,22 +37,13 @@ header {
 		padding: 10px;
 	}
 
-	#tweets-seen {
-		margin-left: 20px;
-		font-weight: 300;
-		font-size: $base-font-size;
-
-		span {
-			font-weight: 500;
-		}
-	}
-
 	#lang-select {
 		position: absolute;
 		top: 16px;
 		right: 40px;
 		color: #ccc;
 		font-size: 32pt;
+		z-index: 10;
 
 		a {
 			text-decoration: none;
@@ -103,20 +94,6 @@ header {
 		font-weight: normal;
 		margin: 10px 0;
 	}
-	
-	.user-line {
-		// background-color: #fdd;
-		position: relative;
-
-		.user-name {
-			font-family: $base-font-family;
-			font-size: $base-font-size * 0.75;
-			font-weight: 300;
-			font-style: italic;
-			margin-left: 10px;
-			vertical-align: middle;
-		}
-	}	
 }
 
 #embedded-tweets {
@@ -138,31 +115,8 @@ header {
 	display: block;
 	width: 400px;
 	height: 100%;
-	z-index: 999;
+	z-index: 2;
 }
-
-.active-users {
-	@extend .drop-shadow;
-	z-index: 3;
-	position: absolute;
-	right: 0px;
-	font-weight: 400;	
-	padding: 5px;
-	margin-top: 15px;
-	min-width: 150px;
-	
-	div {
-		padding: 5px 0px;
-	}
-
-	.active-user {
-		border-top: 1px solid #ddd;
-	}
-	// .active-user:not(:last-of-type) {
-			// border-bottom: 1px solid #ddd;
-	// }
-}
-
 
 #user-list {
 	position: absolute;

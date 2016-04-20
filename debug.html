@@ -31,10 +31,12 @@
             $(document).ready(
                     function() {
                         poet.windowLoaded(window);
-                        // window.twttr.widgets.createTweet(
-                        //     '602146687612682242',
-                        //     document.getElementById('test-tweet')
-                        //     );
+                        document.getElementById('lang-fr').onclick = function(event) {
+                            poet.langSelect('fr');
+                        }
+                        document.getElementById('lang-en').onclick = function(event) {
+                            poet.langSelect('en');
+                        }
                     });
         </script>
     </head>
