@@ -6,6 +6,7 @@ body {
     color: $text-color;
     background-color: $background-color;
     -webkit-text-size-adjust: 100%;
+    overflow: hidden;
 }
 
 .drop-shadow {
@@ -99,7 +100,8 @@ header {
 #embedded-tweets {
 	position: absolute;
 	bottom: 0;
-	right: 10px;
+	right: 0;
+	margin-right: 10px;
 	z-index: -1;
 
 	.twitter-embed {

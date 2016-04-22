@@ -34,6 +34,7 @@ def stripped_tweet(tweet):
 def line_iter(host="127.0.0.1", port="8069", request_kwargs=None, save=False):
     poet = poetry.sorting.MultiPoet(poets=[
         poetry.sorting.Haikuer(lang='fr'),
+        poetry.sorting.Coupler(lang='fr', syllable_counts=[10, 12]),
         poetry.sorting.Limericker(),
         ])
 

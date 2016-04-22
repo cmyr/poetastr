@@ -24,13 +24,14 @@
   clear: both; }
 
 body {
-  font-family: "HelveticaNeueThin", "HelveticaNeue-Thin", "Helvetica Neue Thin", "HelveticaNeue", "Helvetica Neue", serif;
+  font-family: "HelveticaNeueThin", "HelveticaNeue-Thin", "Helvetica Neue Thin", "HelveticaNeue", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   font-size: 14px;
   line-height: 1.5;
   font-weight: 200;
   color: #111;
   background-color: #fff;
-  -webkit-text-size-adjust: 100%; }
+  -webkit-text-size-adjust: 100%;
+  overflow: hidden; }
 
 .drop-shadow {
   background-color: rgba(255, 255, 255, 0.7);
@@ -100,7 +101,8 @@ header {
 #embedded-tweets {
   position: absolute;
   bottom: 0;
-  right: 10px;
+  right: 0;
+  margin-right: 10px;
   z-index: -1; }
   #embedded-tweets .twitter-embed {
     opacity: 0.0;
