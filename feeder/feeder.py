@@ -8,12 +8,9 @@ from twitter.oauth import OAuth
 
 import zmqstream
 
-from zmqstream.publisher import (StreamPublisher, StreamResult,
-                                 StreamResultError, StreamResultItem)
+from zmqstream.publisher import (StreamPublisher, StreamResult, StreamResultItem)
 import twittertools
 import poetryutils2 as poetry
-import interactions
-from itercombiner import IterCombiner
 from saver import save_poem
 
 """ cleans up stream results and rebroadcasts them """
@@ -32,15 +29,14 @@ def tweet_filter(source_iter, langs=['en']):
 
 def stripped_tweet(tweet):
     dict_template = {"text": True, "id_str": True, 'lang': True,
-                     "user": {"screen_name": True, "name": True}}
+                     "user": {"screen_name": True, "name": True, 'profile_image_url': True}}
     return twittertools.prune_dict(tweet, dict_template)
 
 
-def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None):
+def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None, save=False):
     poet = poetry.sorting.MultiPoet(poets=[
         poetry.sorting.Haikuer(lang='fr'),
         poetry.sorting.Limericker(),
-        # poetry.sorting.Haikuer(lang='en')
         ])
 
     stream = tweet_filter(
@@ -54,20 +50,21 @@ def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None):
         poetry.filters.screenname_filter,
         poetry.filters.low_letter_filter(0.75),
         poetry.filters.bad_swears_filter(),
+        
         poetry.filters.emoji_filter
     ]
-    
-    real_word_filters = {
-        'en': poetry.filters.real_word_ratio_filter(0.8, lang='en'),
-        'fr': poetry.filters.real_word_ratio_filter(0.8, lang='fr')
+
+    lang_filters = {
+        'en': [
+            poetry.filters.real_word_ratio_filter(0.8, lang='en')],
+        'fr': [
+            poetry.filters.real_word_ratio_filter(0.8, lang='fr'),
+            poetry.filters.bad_swears_filter('fr')]
         }
 
-    itercombiner = IterCombiner(
-        poetry.line_iter(stream, line_filters, key='text'))
-    for line in itercombiner:
+    for line in poetry.line_iter(stream, line_filters, key='text'):
         if (line.get("lang") not in ('en', 'fr') or not
-                real_word_filters[line['lang']](
-                    poetry.utils.unicodify(line['text']))):
+                all(f(poetry.utils.unicodify(line['text'])) for f in lang_filters[line['lang']])):
             continue
 
         poem = poet.add_keyed_line(line, key='text')
@@ -81,30 +78,9 @@ def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None):
             poem = [poem]
         for p in poem:
             if isinstance(p, poetry.sorting.Poem):
-                # save_poem(p)
+                if save:
+                    save_poem(p)
                 yield StreamResult(StreamResultItem, {'poem': p.to_dict()})
-        
-        # handle user mentions:
-        # twitter = interactions.TwitterHandler(auth=user_auth)
-        # usertweets = twitter.userstweets
-        # if usertweets:
-        #     print('found user')
-        #     for user, tweets in usertweets:
-        #         filtered_tweets = [t for t in tweet_filter(tweets) if t]
-        #         filtered_tweets = [t for t in
-        #             poetry.line_iter(filtered_tweets, line_filters, key='text')]
-        #         payload = {
-        #             'screen_name': user,
-        #             'total_count': len(tweets),
-        #             'filtered_count': len(filtered_tweets)}
-        #         yield StreamResult(StreamResultItem, {'track-user': payload})
-        #         for t in filtered_tweets:
-        #             t['special_user'] = user
-        #         itercombiner.add_items(filtered_tweets)
-        # else:
-        #     rate_limit = twitter.process_user_events()
-        #     if rate_limit:
-        #         yield StreamResult(StreamResultItem, {'rate-limit': {'wait_time': rate_limit}})
 
 
 def main():
@@ -128,8 +104,6 @@ def main():
     auth = OAuth(creds[2], creds[3], creds[0], creds[1])
 
     iterator = functools.partial(line_iter, auth, source_host, source_port)
-    # for line in iterator():
-    #     print(line)
     publisher = StreamPublisher(
         iterator=iterator,
         hostname=dest_host,
