@@ -33,7 +33,7 @@ def stripped_tweet(tweet):
     return twittertools.prune_dict(tweet, dict_template)
 
 
-def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None, save=False):
+def line_iter(host="127.0.0.1", port="8069", request_kwargs=None, save=False):
     poet = poetry.sorting.MultiPoet(poets=[
         poetry.sorting.Haikuer(lang='fr'),
         poetry.sorting.Limericker(),
@@ -50,7 +50,6 @@ def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None, sav
         poetry.filters.screenname_filter,
         poetry.filters.low_letter_filter(0.75),
         poetry.filters.bad_swears_filter(),
-        
         poetry.filters.emoji_filter
     ]
 
@@ -86,7 +85,6 @@ def line_iter(user_auth, host="127.0.0.1", port="8069", request_kwargs=None, sav
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('auth', type=str, help="path to twitter auth token")
     parser.add_argument('--hostin', type=str, help="source host")
     parser.add_argument('--portin', type=str, help="source port")
     parser.add_argument('--hostout', type=str, help="host out")
@@ -98,12 +96,7 @@ def main():
     dest_host = args.hostout or '127.0.0.1'
     dest_port = args.portout or 8070
 
-    creds = twittertools.load_auth(args.auth, raw=True)
-    # the OAuth object in the twitter module has different positional arguments
-# then the requests OAuth module used in my own streaming implementation
-    auth = OAuth(creds[2], creds[3], creds[0], creds[1])
-
-    iterator = functools.partial(line_iter, auth, source_host, source_port)
+    iterator = functools.partial(line_iter, source_host, source_port)
     publisher = StreamPublisher(
         iterator=iterator,
         hostname=dest_host,
