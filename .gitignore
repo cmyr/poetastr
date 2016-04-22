@@ -2,3 +2,6 @@
 .sass-cache
 twittercreds.py
 .DS_Store
+.cache
+todo.todo
+
