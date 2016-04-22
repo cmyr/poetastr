@@ -4,8 +4,6 @@ from __future__ import unicode_literals
 
 import functools
 
-from twitter.oauth import OAuth
-
 import zmqstream
 
 from zmqstream.publisher import (StreamPublisher, StreamResult, StreamResultItem)
@@ -67,11 +65,6 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None, save=False):
             continue
 
         poem = poet.add_keyed_line(line, key='text')
-
-        if line.get('special_user'):
-            yield StreamResult(StreamResultItem, {'user-line': line})
-        else:
-            yield StreamResult(StreamResultItem, {'line': line})
 
         if not isinstance(poem, list):
             poem = [poem]
