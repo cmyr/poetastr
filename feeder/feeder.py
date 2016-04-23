@@ -3,15 +3,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import functools
+import time
 
 import zmqstream
 
-from zmqstream.publisher import (StreamPublisher, StreamResult, StreamResultItem)
+from zmqstream.publisher import (
+    StreamPublisher, StreamResult,
+    StreamResultItem, StreamResultKeepAlive)
 import twittertools
 import poetryutils2 as poetry
 from saver import save_poem
 
 """ cleans up stream results and rebroadcasts them """
+
+KEEP_ALIVE_INTERVAL = 20
 
 
 def tweet_filter(source_iter, langs=['en']):
@@ -60,7 +65,13 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None, save=False):
             poetry.filters.bad_swears_filter('fr')]
         }
 
+    last_send = time.time()
     for line in poetry.line_iter(stream, line_filters, key='text'):
+
+        if time.time() - last_send > KEEP_ALIVE_INTERVAL:
+            last_send = time.time()
+            yield StreamResult(StreamResultKeepAlive, None)
+
         if (line.get("lang") not in ('en', 'fr') or not
                 all(f(poetry.utils.unicodify(line['text'])) for f in lang_filters[line['lang']])):
             continue
@@ -73,6 +84,7 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None, save=False):
             if isinstance(p, poetry.sorting.Poem):
                 if save:
                     save_poem(p)
+                last_send = time.time()
                 yield StreamResult(StreamResultItem, {'poem': p.to_dict()})
 
 

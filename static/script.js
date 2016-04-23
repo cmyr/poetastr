@@ -94,6 +94,8 @@ poet = {
                 console.log('rate limited');
                 console.log(msg.body.wait_time);
                 break;
+            case "keep_alive":
+                break;
             default:
             console.log(msg.type)
         }

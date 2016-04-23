@@ -8,9 +8,8 @@ import gevent
 import gevent.monkey
 from gevent.pywsgi import WSGIServer
 
-from flask import Flask, request, Response, render_template
+from flask import Flask, Response, render_template
 
-# import twittertools
 import zmqstream
 
 gevent.monkey.patch_all()
@@ -23,8 +22,7 @@ def encode_message(message_type, body):
     jsonable = {'mtype': message_type, 'body': body}
     return 'data: %s\n\n' % json.dumps(jsonable)
 
-
-EXPECTED_KEYS = set(['line', 'user-line', 'poem', 'track-user', 'rate-limit'])
+EXPECTED_KEYS = set(['line', 'user-line', 'poem', 'track-user', 'rate-limit', 'keep_alive'])
 
 
 def poet_sse_iter(host="127.0.0.1", port="8070", debug=False):
