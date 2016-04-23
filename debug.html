@@ -31,11 +31,8 @@
             $(document).ready(
                     function() {
                         poet.windowLoaded(window);
-                        document.getElementById('lang-fr').onclick = function(event) {
-                            poet.langSelect('fr');
-                        }
-                        document.getElementById('lang-en').onclick = function(event) {
-                            poet.langSelect('en');
+                        document.getElementById('lang-select').onclick = function(event) {
+                            poet.langToggle();
                         }
                     });
         </script>
@@ -57,11 +54,9 @@
     </div>
 
         <h2>poetastr</h2>
-        <div id="lang-select"><a href="#" class="active" id='lang-fr'>FR</a>/<a href="#" id='lang-en' class="active">EN</a></div>
+        <div id="lang-select-container"><a href="#" class="active" id='lang-select'>FR</a></div>
     </header>
 
-    <!-- <div id="recent-tweets">
-    </div> -->
     <div class="wrapper">
 
 

@@ -54,20 +54,19 @@ header {
   header #twitter-bird-svg {
     display: inline-block;
     padding: 10px; }
-  header #lang-select {
+  header #lang-select-container {
     position: absolute;
     top: 16px;
     right: 40px;
     color: #ccc;
     font-size: 32pt;
     z-index: 10; }
-    header #lang-select a {
+    header #lang-select-container a {
       text-decoration: none;
       color: black;
-      font-weight: normal;
-      padding: .2em; }
-    header #lang-select .active {
-      font-weight: bold; }
+      padding: .2em;
+      font-weight: bold;
+      word-spacing: -0.2em; }
 
 .poem-container {
   font-family: "Vollkorn", serif;

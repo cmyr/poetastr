@@ -38,7 +38,7 @@ header {
 		padding: 10px;
 	}
 
-	#lang-select {
+	#lang-select-container {
 		position: absolute;
 		top: 16px;
 		right: 40px;
@@ -49,13 +49,12 @@ header {
 		a {
 			text-decoration: none;
 			color: black;
-			font-weight: normal;
 			padding: .2em;
+			font-weight: bold;
+			word-spacing: -0.2em;
+
 		}
 
-		.active {
-			font-weight: bold;
-		}
 	}
 
 }

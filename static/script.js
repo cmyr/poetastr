@@ -25,36 +25,41 @@ poet = {
 			}
 		}
 	},
-    
     showLangs: {
-        'en': true,
+        'en': false,
         'fr': true
     },
 
-    langSelect: function ( lang ) {
-        var elementID = (lang == 'en') ? '#lang-en' : '#lang-fr';
-        var toggle = false;
-        
-        poet.showLangs[lang] = !poet.showLangs[lang];
-
-        if (!poet.showLangs['en'] && !poet.showLangs['fr']) {
-            toggle = true;
+    _lang: 0,
+    langToggle: function () {
+        this._lang = (this._lang + 1) % 3
+        var newText = '';
+        switch (this._lang) {
+            case 0:
+                poet.showLangs['en'] = false;
+                newText = 'FR';
+                if (this.recentPoems['fr'] !== null) {
+                    this.displayPoem(this.recentPoems['fr']);
+                }
+                break;
+            case 1:
+                poet.showLangs['fr'] = false;
+                poet.showLangs['en'] = true;
+                newText = 'EN';
+                if (this.recentPoems['en'] !== null) {
+                    this.displayPoem(this.recentPoems['en']);
+                }
+                break;
+            default:
+                poet.showLangs['fr'] = true;
+                newText = 'FR   / EN';
+                break;
         }
 
-        if (poet.showLangs[lang] == true) {
-            $(elementID).addClass('active');
-            if (this.recentPoems[lang] !== null) {
-                this.displayPoem(this.recentPoems[lang]);
-            }
-        } else {
-            $(elementID).removeClass('active');
-        }
-
-        if (toggle) {
-            var otherLang = (lang == 'en') ? 'fr' : 'en';
-            poet.langSelect(otherLang)                    
-        }
-
+        var el = $('#lang-select').fadeOut('fast', function() {
+            $(this).html(newText)
+            .fadeIn('fast');
+        });
     },
 
     formatLine: function (line) {
