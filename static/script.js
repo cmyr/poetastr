@@ -109,6 +109,7 @@ poet = {
     waitingForPoem: true,
     poemQueue: Array(),
     addPoem: function (poem) {
+        this.poemCallback();
         if (this.waitingForPoem && this.showLangs[poem.lang]) {
             this.displayPoem(poem);
         } else {
@@ -149,6 +150,13 @@ poet = {
             this.waitingForPoem = true;
             console.log('waiting for poem')
         }
+    },
+
+    poemCallback: function() {
+        console.log('sending callback')
+        $.get('/client_wrote_poem', {param1: 'value1'}, function(data, textStatus, xhr) {
+          // console.log('client wrote poem success');
+        })
     }
 };
 
