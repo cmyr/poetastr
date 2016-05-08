@@ -17,8 +17,6 @@ import zmqstream
 gevent.monkey.patch_all()
 app = Flask(__name__)
 
-TUNNEL = None
-
 
 def encode_message(message_type, body):
     jsonable = {'mtype': message_type, 'body': body}
@@ -31,10 +29,7 @@ def poet_sse_iter(host="127.0.0.1", port="8070", debug=False):
     """
     connects to the zmq feeder and turns results into server-sent-events
     """
-    kwargs = {}
-    if TUNNEL:
-        kwargs = {'tunnel': TUNNEL}
-    iterator = zmqstream.zmq_iter(host, port, **kwargs)
+    iterator = zmqstream.zmq_iter(host, port)
     for item in iterator:
         assert(len(item) == 1), item
         key, payload = item.items()[0]
@@ -69,14 +64,6 @@ def client_callback():
 
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--tunnel', type=str, help="sever for tunneling over ssh")
-    args = parser.parse_args()
-    if args.tunnel:
-        global TUNNEL
-        TUNNEL = args.tunnel
-
     http_server = WSGIServer(('127.0.0.1', 8001), app)
     http_server.serve_forever()
 
