@@ -106,6 +106,8 @@ header {
   #embedded-tweets .twitter-embed {
     opacity: 0.0;
     width: 300px; }
+  #embedded-tweets a {
+    pointer-events: none; }
 
 #embeded-tweet-click-blocker {
   position: absolute;

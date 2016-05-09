@@ -18,6 +18,7 @@ from saver import save_poem
 
 KEEP_ALIVE_INTERVAL = 20
 
+skip_words_en = set(['fuck', 'fucking', 'fucked', 'fucks', 'fuckers', 'cunt', 'cunts', 'fag', 'faggot', 'faggots', 'nigger', 'niggers'])
 
 def tweet_filter(source_iter, langs=['en']):
     langs = set(langs)
@@ -53,7 +54,7 @@ def line_iter(host="127.0.0.1", port="8069", request_kwargs=None, save=False):
         poetry.filters.hashtag_filter,
         poetry.filters.screenname_filter,
         poetry.filters.low_letter_filter(0.75),
-        poetry.filters.bad_swears_filter(),
+        poetry.filters.blacklist_filter(skip_words_en),
         poetry.filters.emoji_filter
     ]
 

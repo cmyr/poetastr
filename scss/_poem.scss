@@ -107,6 +107,9 @@ header {
 		opacity: 0.0;
 		width: 300px;
 	}
+	a {
+		pointer-events: none;
+	}
 }
 
 #embeded-tweet-click-blocker {
